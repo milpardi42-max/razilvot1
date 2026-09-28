@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { SafeImage as Image } from "@/components/media/SafeImage";
 import { ArrowDown, ArrowUpRight, UserRound } from "lucide-react";
 import { PortfolioHeroVideo } from "./PortfolioHeroVideo";
@@ -62,10 +63,21 @@ export function PortfolioHero({
   const cardGap =
     cfg.instructorCardSize === "sm" ? "gap-3 sm:gap-4 p-3 sm:p-4" : "gap-4 sm:gap-5 p-4 sm:p-5";
 
-  /* ── آفست ویدئو ── */
+  /* ── آفست (کشش) کادر ویدئو ──
+   *
+   * «کشش از سمت چپ» در پنل ادمین نباید کارت پیش‌نمایش را از لبهٔ صفحه بیرون ببرد؛
+   * قبلاً همان عدد به‌صورت margin-left منفی و در همهٔ اندازه‌ها اعمال می‌شد و بخشی
+   * از ویدئو (و حتی دکمهٔ پخش) بیرون از صفحه بریده می‌شد.
+   *
+   * حالا فقط عدد در یک متغیر CSS می‌نشیند و سقف/شرط اندازه در .pf-video-card
+   * (globals.css) اعمال می‌شود: بیشینهٔ کشش = حاشیهٔ خودِ چیدمان (container-x) و
+   * در نمایشگرهای کوچک‌تر از lg هیچ کششی وجود ندارد. پس کادر همیشه کامل و با
+   * نسبت درست دیده می‌شود و جهت (RTL/LTR) هم درست است.
+   */
+  const videoPull = Math.max(0, cfg.videoOffsetLeft);
   const videoOffsetStyle =
-    cfg.videoOffsetLeft > 0
-      ? { marginLeft: `-${cfg.videoOffsetLeft}px` }
+    videoPull > 0
+      ? ({ "--pf-video-pull": `${videoPull}px` } as CSSProperties)
       : undefined;
 
   return (
@@ -143,7 +155,7 @@ export function PortfolioHero({
 
           {/* ── ستون ویدئو + کارت مدرس ── */}
           <div
-            className="mx-auto w-full max-w-[560px] lg:ms-auto lg:me-0"
+            className="pf-video-card mx-auto w-full max-w-[560px] lg:ms-auto lg:me-0"
             style={videoOffsetStyle}
           >
             <PortfolioHeroVideo

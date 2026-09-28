@@ -916,6 +916,21 @@ html[lang="fa"] .pf-hero-title span {
   font-weight: 400 !important;
 }
 
+/* ---------- Portfolio hero video card — bounded stretch -------------------- */
+/*
+ * کشش کادر پیش‌نمایش ویدئو (تنظیم «کشش از سمت چپ» در پنل ادمین) سقف دارد:
+ * بیشترین مقدار = حاشیهٔ خودِ چیدمان، یعنی همان clamp پیش‌فرض container-x.
+ * پس کارت هرگز از لبهٔ صفحه بیرون نمی‌زند و کل ویدئو — قاب، دکمهٔ پخش و
+ * فوتر — همیشه دیده می‌شود. مقدار از متغیر --pf-video-pull می‌آید و
+ * margin-inline-end یعنی در هر دو جهت RTL و LTR کشش به سمت لبهٔ صفحه است.
+ * زیر lg هیچ کششی اعمال نمی‌شود تا کادر تمام‌عرض و کامل بماند.
+ */
+@media (min-width: 64rem) {
+  .pf-video-card {
+    margin-inline-end: calc(-1 * min(var(--pf-video-pull, 0px), clamp(1rem, 4vw, 2.5rem)));
+  }
+}
+
 
 /* ============================================================
    Auth Shell — Login4 + Signup1 inspired animated cards
