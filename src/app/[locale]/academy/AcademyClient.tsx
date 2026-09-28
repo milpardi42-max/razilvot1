@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -27,6 +27,7 @@ import { useLocale } from "@/components/providers/AppProviders";
 import { EnrollForm } from "@/components/academy/EnrollForm";
 import type { EducationCardData } from "@/components/cards/EducationCard";
 import type { Category } from "@/lib/types";
+import { SafeVideo } from "@/components/media/SafeVideo";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type Tab = "all" | "course" | "workshop" | "webinar";
@@ -134,7 +135,7 @@ function EnrollModal({
         {/* Header: the course's own preview video when the panel has one */}
         <div className="relative h-40 overflow-hidden bg-[#0f141c]">
           {preview ? (
-            <video src={preview.url} poster={item.image} muted loop autoPlay playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+            <SafeVideo src={preview.url} poster={item.image} muted loop autoPlay playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-80" />
           ) : (
             <Image src={item.image} alt="" fill sizes="600px" className="object-cover opacity-60" />
           )}

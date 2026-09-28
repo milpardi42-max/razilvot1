@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { ArrowUpRight, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";

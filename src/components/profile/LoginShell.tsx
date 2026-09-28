@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { Logo } from "@/components/layout/Logo";
 import { href } from "@/lib/utils";
 import type { Locale } from "@/lib/i18n/types";

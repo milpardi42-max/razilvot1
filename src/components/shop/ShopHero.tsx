@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { ArrowUpRight, Layers, Sparkles, Truck } from "lucide-react";
 import { Badge, Sku } from "@/components/ui/Badge";

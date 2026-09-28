@@ -52,6 +52,7 @@ import type {
   WebinarStreamConfig,
 } from "@/lib/types";
 import type { Locale, Localized } from "@/lib/i18n/types";
+import { SafeImg } from "@/components/media/SafeImg";
 
 /* ═══════════════════════════════════════════════════════════════
    CONSTANTS
@@ -1348,8 +1349,7 @@ function ItemCard({
       {/* Cover */}
       <div className="relative h-40 bg-background-secondary overflow-hidden">
         {item.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image} alt={t(item.title, "fa")}
+          <SafeImg src={item.image} alt={t(item.title, "fa")}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted">

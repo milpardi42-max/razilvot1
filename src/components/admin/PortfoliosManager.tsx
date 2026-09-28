@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
 import type { Artist, Category, DraftStatus, Portfolio, SiteContent } from "@/lib/types";
 import type { Locale, Localized } from "@/lib/i18n/types";
+import { SafeImg } from "@/components/media/SafeImg";
 
 /* ──────────────────────────────────────────────────────────────
    Types
@@ -285,9 +286,7 @@ function PortfolioEditDrawer({
             </Field>
             {form.cover && (
               <div className="mt-2 mb-3 overflow-hidden rounded-lg bg-background-secondary">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={form.cover}
+                <SafeImg                   src={form.cover}
                   alt=""
                   className="h-40 w-full object-cover"
                   onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
@@ -404,9 +403,7 @@ function PortfolioCardItem({
       {/* Cover */}
       <div className="relative aspect-[16/9] bg-background-secondary overflow-hidden">
         {p.cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={p.cover}
+          <SafeImg             src={p.cover}
             alt=""
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
@@ -548,8 +545,7 @@ function PortfolioRowItem({
       {/* Thumb */}
       <div className="h-12 w-16 shrink-0 overflow-hidden rounded-md bg-background-secondary">
         {p.cover ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.cover} alt="" className="h-full w-full object-cover" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
+          <SafeImg src={p.cover} alt="" className="h-full w-full object-cover" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <ImageIcon className="h-4 w-4 text-muted/30" />

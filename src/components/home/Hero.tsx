@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -8,6 +8,7 @@ import { useLocale } from "@/components/providers/AppProviders";
 import { Button } from "@/components/ui/Button";
 import { cn, faNum, href, t } from "@/lib/utils";
 import type { HeroContent, Pattern } from "@/lib/types";
+import { SafeVideo } from "@/components/media/SafeVideo";
 
 interface Props {
   hero: HeroContent;
@@ -139,7 +140,7 @@ export function Hero({ hero, patterns, stats }: Props) {
       {/* media */}
       <div ref={mediaRef} className="absolute inset-0 will-change-transform scale-[1.06]">
         {hero.video ? (
-          <video src={hero.video} poster={hero.image} autoPlay muted loop playsInline className="h-full w-full object-cover" />
+          <SafeVideo src={hero.video} poster={hero.image} autoPlay muted loop playsInline className="h-full w-full object-cover" />
         ) : slideImages ? (
           slideImages.map((src, i) => (
             <Image key={src} src={src} alt="" fill priority={i <= 1} quality={100}

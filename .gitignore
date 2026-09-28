@@ -44,6 +44,9 @@ next-env.d.ts
 # marketplace runtime data: private master files, staged chunks and derivatives.
 # These are buyer/artist assets — never commit them.
 /data/objects/
+
+# uploaded images/videos served by /api/media (runtime content, never committed)
+/data/media/
 /data/private/
 
 # marketplace object storage (local backend): private masters, staged chunks and

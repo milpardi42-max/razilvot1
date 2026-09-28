@@ -1,7 +1,7 @@
 "use client";
 import { CopyButton } from "@/components/ui/CopyButton";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";

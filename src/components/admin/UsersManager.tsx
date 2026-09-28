@@ -19,6 +19,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { printFontFace, printWhenReady } from "@/lib/print-document";
 import { cn } from "@/lib/utils";
 import { SESSION_FETCH } from "@/lib/http";
 
@@ -86,7 +87,7 @@ function buildPdfHtml(users: AdminUser[], title: string): string {
 <meta charset="utf-8"/>
 <title>${title}</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap');
+  ${printFontFace()}
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Vazirmatn', Tahoma, sans-serif; font-size: 12px; color: #1f2328; padding: 28px 32px; direction: rtl; }
   h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #1e2230; }
@@ -133,12 +134,12 @@ function printPdf(users: AdminUser[], title: string) {
   doc.open();
   doc.write(html);
   doc.close();
-  // Wait for fonts then print
-  setTimeout(() => {
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-    setTimeout(() => document.body.removeChild(iframe), 2000);
-  }, 600);
+  /* چاپ بعد از آماده‌شدن فونت خودمیزبان، سپس پاک‌کردن iframe. */
+  const win = iframe.contentWindow;
+  if (!win) return;
+  void printWhenReady(win).finally(() => {
+    window.setTimeout(() => iframe.remove(), 2000);
+  });
 }
 
 /* ─── Action Menu ─── */

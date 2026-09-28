@@ -29,6 +29,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { printFontFace, printWhenReady } from "@/lib/print-document";
 import type { PublicUser } from "@/lib/data/users";
 import type { Artist } from "@/lib/types";
 
@@ -108,7 +109,7 @@ function exportPDF(rows: ArtistRow[], title: string) {
   <meta charset="UTF-8"/>
   <title>${title}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap');
+    ${printFontFace()}
     *{box-sizing:border-box}body{font-family:'Vazirmatn',Tahoma,sans-serif;margin:32px;color:#111}
     h1{font-size:20px;margin-bottom:4px}p{font-size:13px;color:#6b7280;margin:0 0 20px}
     table{width:100%;border-collapse:collapse;font-size:12px}
@@ -143,8 +144,8 @@ function exportPDF(rows: ArtistRow[], title: string) {
   if (!win) return;
   win.document.write(html);
   win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 600);
+  /* چاپ بعد از آماده‌شدن فونت خودمیزبان — نه با یک تأخیر حدسی. */
+  void printWhenReady(win);
 }
 
 /* ──────────────────────────────────────────────────────────────

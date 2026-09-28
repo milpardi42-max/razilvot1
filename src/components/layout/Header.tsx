@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, LayoutDashboard, Menu, Moon, ReceiptText, ShoppingBag, Sun, Store, User, X } from "lucide-react";

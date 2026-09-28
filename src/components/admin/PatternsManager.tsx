@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn, href, t } from "@/lib/utils";
 import type { Pattern, Category, Artist, SiteContent } from "@/lib/types";
+import { SafeImg } from "@/components/media/SafeImg";
 
 /* ─── helpers ─── */
 function farsiNum(n: number) {
@@ -75,8 +76,7 @@ function PatternRow({
     <li className="flex flex-col gap-3 rounded-xl border border-border bg-white p-4 transition-shadow hover:shadow-medium sm:flex-row sm:items-center">
       {/* تصویر */}
       <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-border bg-background-secondary">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={pattern.image} alt={t(pattern.title, "fa")} className="h-full w-full object-cover" />
+        <SafeImg src={pattern.image} alt={t(pattern.title, "fa")} className="h-full w-full object-cover" />
         {/* رنگ‌های palette */}
         {pattern.palette?.length > 0 && (
           <div className="absolute bottom-0 inset-x-0 flex h-2">
@@ -188,9 +188,7 @@ function PatternGridCard({
     <div className="group relative flex flex-col rounded-xl border border-border bg-white overflow-hidden transition-shadow hover:shadow-medium">
       {/* تصویر */}
       <div className="relative aspect-[4/3] overflow-hidden bg-background-secondary">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={pattern.image}
+        <SafeImg           src={pattern.image}
           alt={t(pattern.title, "fa")}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Film, Play, RotateCcw } from "lucide-react";
 import type { Locale } from "@/lib/i18n/types";
+import { resolveMediaSrc } from "@/lib/media/url";
 
 /** Click-to-play: no autoplay, modal, sound surprises or continuous background download. */
 export function PortfolioHeroVideo({
@@ -51,8 +52,8 @@ export function PortfolioHeroVideo({
       <div className="relative aspect-video bg-black">
         <video
           ref={videoRef}
-          src={src}
-          poster={poster}
+          src={resolveMediaSrc(src, { kind: "video" })}
+          poster={poster ? resolveMediaSrc(poster) : undefined}
           controls={started && !failed}
           playsInline
           preload="metadata"

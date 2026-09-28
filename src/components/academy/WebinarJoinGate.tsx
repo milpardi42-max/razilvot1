@@ -6,7 +6,7 @@
  * On submit: stores guest identity in sessionStorage + calls onJoin.
  */
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { useState, useEffect } from "react";
 import { Radio, Users, Clock, CalendarClock, ShieldCheck, Wifi, ArrowLeft } from "lucide-react";
 import { cn, faNum } from "@/lib/utils";

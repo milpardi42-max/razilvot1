@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { BookOpen, Users, Award, GraduationCap } from "lucide-react";
 import { usePortfolioLang } from "@/components/portfolio/PortfolioLangProvider";
 import { T, COURSES } from "@/lib/portfolio-translations";

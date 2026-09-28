@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { ArrowDown, ArrowUpRight, UserRound } from "lucide-react";
 import { PortfolioHeroVideo } from "./PortfolioHeroVideo";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";

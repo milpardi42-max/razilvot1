@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { cn } from "@/lib/utils";
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/Breadcrumb";
 import type { Locale } from "@/lib/i18n/types";

@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { getSession } from "@/lib/auth";
 import { withNoStore } from "@/lib/http";
 import { clientIp, tooManyAttempts, recordAttempt, retryAfterSeconds } from "@/lib/rate-limit";
+import { buildMediaKey, foreignCdnAllowed, mediaBackendName, putMedia } from "@/lib/media/store";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,11 @@ async function uploadVideoToVercelBlob(
   return { url: blob.url };
 }
 
+/**
+ * نوشتن در `public/` برای آپلود کاربر دیگر مسیر پیش‌فرض نیست: هر بیلد این پوشه را
+ * از مخزن روی نسخه‌ی استند‌الون بازنویسی می‌کند و ویدیوهای آپلودشده از بین می‌رفتند.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function uploadVideoLocal(
   buffer: Buffer,
   filename: string
@@ -97,6 +103,8 @@ async function uploadVideoLocal(
   return { url: `/videos/academy/${filename}` };
 }
 
+/** @deprecated مانند `uploadVideoLocal` — مسیر پیش‌فرض به استور مدیا منتقل شد. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function uploadImageLocal(
   buffer: Buffer,
   filename: string
@@ -118,10 +126,11 @@ async function uploadImageLocal(
  *
  * Returns: { ok: true, url, sizeBytes, durationSec? }
  *
- * Storage priority (first configured wins):
- *   1. Cloudinary  (CLOUDINARY_CLOUD_NAME + API_KEY + API_SECRET)
- *   2. Vercel Blob (BLOB_READ_WRITE_TOKEN)
- *   3. Local disk  public/videos/academy/<hash>.<ext>
+ * ترتیب ذخیره‌سازی (ایران‌محور — اولین گزینه‌ی موجود برنده است):
+ *   1. استور مدیای خودمان: `data/media` (دیسک داخلی) یا باکت S3 ایرانی
+ *      (`MEDIA_S3_*` / `MARKETPLACE_S3_*`). فایل از دامنه‌ی خود سایت سرو می‌شود
+ *      (`/api/media/...`) و پخش ویدیو (Range/seek) کامل پشتیبانی می‌شود.
+ *   2. Cloudinary / Vercel Blob — فقط با پرچم صریح `MEDIA_ALLOW_FOREIGN_CDN=1`.
  */
 export async function POST(req: Request) {
   // Admin only
@@ -182,9 +191,9 @@ export async function POST(req: Request) {
     const hash = crypto.createHash("sha1").update(buffer).digest("hex").slice(0, 16);
     const filename = `${hash}.${ext}`;
     try {
-      const { url } = await uploadImageLocal(buffer, filename);
+      const stored = await putMedia(buildMediaKey("academy/covers", filename, ext), buffer, file.type);
       return NextResponse.json(
-        { ok: true, url, sizeBytes: file.size },
+        { ok: true, url: stored.url, sizeBytes: file.size, storage: mediaBackendName() },
         withNoStore()
       );
     } catch (e) {
@@ -218,20 +227,24 @@ export async function POST(req: Request) {
   try {
     let result: { url: string; durationSec?: number };
 
-    if (
-      process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
-    ) {
+    if (foreignCdnAllowed() && process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       result = await uploadVideoToCloudinary(buffer, ext, hash);
-    } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+    } else if (foreignCdnAllowed() && process.env.BLOB_READ_WRITE_TOKEN) {
       result = await uploadVideoToVercelBlob(buffer, filename);
     } else {
-      result = await uploadVideoLocal(buffer, filename);
+      /* پیش‌فرض ایرانی: دیسک داخلی یا باکت S3 داخلی، سرو از دامنه‌ی خود سایت. */
+      const stored = await putMedia(buildMediaKey("academy/videos", filename, ext), buffer, file.type);
+      result = { url: stored.url };
     }
 
     return NextResponse.json(
-      { ok: true, url: result.url, sizeBytes: file.size, durationSec: result.durationSec },
+      {
+        ok: true,
+        url: result.url,
+        sizeBytes: file.size,
+        durationSec: result.durationSec,
+        storage: mediaBackendName(),
+      },
       withNoStore()
     );
   } catch (e) {

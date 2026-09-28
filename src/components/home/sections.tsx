@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import Link from "next/link";
 import { ArrowUpRight, Building2, PenTool, Quote } from "lucide-react";
 import { useLocale } from "@/components/providers/AppProviders";

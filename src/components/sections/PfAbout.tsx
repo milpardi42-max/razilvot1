@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import { usePortfolioLang } from "@/components/portfolio/PortfolioLangProvider";
 import { T } from "@/lib/portfolio-translations";
 

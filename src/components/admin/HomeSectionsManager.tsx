@@ -48,6 +48,7 @@ import type {
   Space,
   Story,
 } from "@/lib/types";
+import { SafeImg } from "@/components/media/SafeImg";
 
 /* ══════════════════════════════════════════════════════════
    helpers
@@ -288,9 +289,7 @@ function ImageUploadCard({
     >
       {/* تصویر */}
       <div className="relative aspect-video w-full overflow-hidden bg-[#0d1117]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
+        <SafeImg           src={src}
           alt={`اسلاید ${index + 1}`}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0.15"; }}
@@ -751,8 +750,7 @@ function HeroEditor({ data, update }: { data: SiteContent; update: (p: Partial<S
                   )}>
                   {/* تصویر پیش‌نمایش */}
                   <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-border">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.image} alt="" className="h-full w-full object-cover" />
+                    <SafeImg src={p.image} alt="" className="h-full w-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold text-foreground">{t(p.title, "fa")}</p>
@@ -893,7 +891,7 @@ function PatternCard({ pattern: p, onEdit, onDelete, onToggleFlag, flagLabel, fl
   return (
     <div className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft hover:shadow-medium transition-shadow">
       <div className="relative aspect-square overflow-hidden bg-background-secondary">
-        <img src={img} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
+        <SafeImg src={img} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
         <div className="absolute right-2 top-2 flex flex-wrap gap-1">
           {p.isNew && <Badge color="green">جدید</Badge>}
           {p.trending && <Badge color="blue">پرطرفدار</Badge>}
@@ -1027,7 +1025,7 @@ function ProductCard({ product: p, onEdit, onDelete }: { product: Product; onEdi
   return (
     <div className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft hover:shadow-medium transition-shadow">
       <div className="relative aspect-[4/3] overflow-hidden bg-background-secondary">
-        <img src={img} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
+        <SafeImg src={img} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
         {hasDis && <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[11px] font-bold text-white"><Percent className="h-3 w-3" />{dp}٪</div>}
         <div className="absolute right-2 top-2 flex flex-wrap gap-1">
           {p.isNew && <Badge color="green">جدید</Badge>}
@@ -1139,7 +1137,7 @@ function ArtistCard({ artist: a, onEdit, onDelete, onToggleFeatured }: { artist:
   return (
     <div className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
       <div className="relative h-24 overflow-hidden bg-background-secondary">
-        <img src={a.cover} alt={t(a.name, "fa")} className="h-full w-full object-cover" />
+        <SafeImg src={a.cover} alt={t(a.name, "fa")} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50" />
         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
           <button onClick={onEdit} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-foreground hover:bg-accent hover:text-white"><Pencil className="h-3.5 w-3.5" /></button>
@@ -1147,7 +1145,7 @@ function ArtistCard({ artist: a, onEdit, onDelete, onToggleFeatured }: { artist:
         </div>
       </div>
       <div className="relative -mt-8 px-4 pb-4">
-        <img src={a.avatar} alt={t(a.name, "fa")} className="h-14 w-14 rounded-full border-2 border-white object-cover shadow-medium" />
+        <SafeImg src={a.avatar} alt={t(a.name, "fa")} className="h-14 w-14 rounded-full border-2 border-white object-cover shadow-medium" />
         <p className="mt-1 font-semibold text-foreground">{t(a.name, "fa")}</p>
         <p className="text-xs text-muted">{t(a.profession, "fa")}</p>
         <div className="mt-2 flex items-center justify-between">
@@ -1245,7 +1243,7 @@ function PortfolioCard({ portfolio: p, onEdit, onDelete, onToggle }: { portfolio
   return (
     <div className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
       <div className="relative aspect-video overflow-hidden bg-background-secondary">
-        <img src={p.cover} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
+        <SafeImg src={p.cover} alt={t(p.title, "fa")} className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60" />
         <div className="absolute bottom-0 right-0 p-3">
           <p className="text-sm font-bold text-white">{t(p.title, "fa")}</p>
@@ -1325,7 +1323,7 @@ function StylesEditor({ data, update }: { data: SiteContent; update: (p: Partial
           return (
             <div key={c.id} className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
               <div className="relative aspect-video overflow-hidden">
-                <img src={c.image} alt={t(c.name, "fa")} className="h-full w-full object-cover" />
+                <SafeImg src={c.image} alt={t(c.name, "fa")} className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50" />
                 <p className="absolute bottom-2 right-3 text-sm font-bold text-white">{t(c.name, "fa")}</p>
                 <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
@@ -1403,7 +1401,7 @@ function SpacesEditor({ data, update }: { data: SiteContent; update: (p: Partial
         {data.spaces.map(s => (
           <div key={s.id} className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
             <div className="relative aspect-square overflow-hidden">
-              <img src={s.image} alt={t(s.name, "fa")} className="h-full w-full object-cover" />
+              <SafeImg src={s.image} alt={t(s.name, "fa")} className="h-full w-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50" />
               <p className="absolute bottom-2 right-2 text-xs font-bold text-white">{t(s.name, "fa")}</p>
               <div className="absolute inset-0 flex items-center justify-center gap-1.5 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
@@ -1463,7 +1461,7 @@ function EducationEditor({ data, update }: { data: SiteContent; update: (p: Part
           {data.education.map(e => (
             <div key={e.id} className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
               <div className="relative aspect-video overflow-hidden bg-background-secondary">
-                <img src={e.image} alt={t(e.title, "fa")} className="h-full w-full object-cover" />
+                <SafeImg src={e.image} alt={t(e.title, "fa")} className="h-full w-full object-cover" />
                 <div className="absolute right-2 top-2 flex gap-1">
                   <Badge color="blue">{typeLabel[e.type] ?? e.type}</Badge>
                   <Badge color="purple">{diffLabel[e.difficulty] ?? e.difficulty}</Badge>
@@ -1565,7 +1563,7 @@ function StoriesEditor({ data, update }: { data: SiteContent; update: (p: Partia
           {data.stories.map(s => (
             <div key={s.id} className="group overflow-hidden rounded-xl border border-border bg-white shadow-soft">
               <div className="relative aspect-video overflow-hidden bg-background-secondary">
-                <img src={s.image} alt={t(s.title, "fa")} className="h-full w-full object-cover" />
+                <SafeImg src={s.image} alt={t(s.title, "fa")} className="h-full w-full object-cover" />
                 <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                   <button onClick={() => setEditTarget(s)} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-foreground hover:bg-accent hover:text-white"><Pencil className="h-3.5 w-3.5" /></button>
                   <button onClick={() => { if (confirm("حذف شود؟")) setStories(data.stories.filter(x => x.id !== s.id)); }} className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-error hover:bg-error hover:text-white"><Trash2 className="h-3.5 w-3.5" /></button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { SafeImage as Image } from "@/components/media/SafeImage";
 import {
   BarChart3,
   ExternalLink,

@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { getSession } from "@/lib/auth";
 import { withNoStore } from "@/lib/http";
 import { clientIp, tooManyAttempts, recordAttempt, retryAfterSeconds } from "@/lib/rate-limit";
+import { buildMediaKey, foreignCdnAllowed, mediaBackendName, putMedia } from "@/lib/media/store";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +96,13 @@ async function uploadToVercelBlob(buffer: Buffer, filename: string): Promise<str
   return blob.url;
 }
 
+/**
+ * نوشتن در `public/` برای آپلودهای کاربر **توصیه نمی‌شود**: هر `next build` این
+ * پوشه را از مخزن روی نسخه‌ی استند‌الون بازنویسی می‌کند و فایل‌های آپلودشده پاک
+ * می‌شوند (دلیل شکسته‌شدن تصاویر بعد از هر دیپلوی). فقط برای سازگاری نگه داشته
+ * شده و دیگر در مسیر پیش‌فرض صدا زده نمی‌شود.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function uploadLocal(buffer: Buffer, filename: string): Promise<string> {
   const uploadsDir = path.join(process.cwd(), "public", "images", "uploads");
   await fs.mkdir(uploadsDir, { recursive: true });
@@ -106,10 +114,13 @@ async function uploadLocal(buffer: Buffer, filename: string): Promise<string> {
  * POST /api/artist/upload
  * Accepts multipart/form-data with a single `file` field.
  *
- * Storage priority (first configured backend wins):
- *   1. Cloudinary  (CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY + CLOUDINARY_API_SECRET)
- *   2. Vercel Blob (BLOB_READ_WRITE_TOKEN)
- *   3. Local file  public/images/uploads/<hash>.<ext>
+ * ترتیب ذخیره‌سازی (ایران‌محور — اولین گزینه‌ی موجود برنده است):
+ *   1. استور مدیای خودمان: دیسک داخلی `data/media` یا باکت S3 ایرانی
+ *      (`MEDIA_S3_*` / `MARKETPLACE_S3_*`) → همیشه از دامنه‌ی خود سایت سرو می‌شود
+ *      (`/api/media/...`)، پس در ایران و بدون فیلترشکن باز می‌شود.
+ *   2. Cloudinary / Vercel Blob — **فقط** اگر ادمین صریحاً
+ *      `MEDIA_ALLOW_FOREIGN_CDN=1` را ست کرده باشد. این سرویس‌ها بیرون از ایران‌اند
+ *      و در حالت پیش‌فرض کنار گذاشته شده‌اند تا تصویر کاربر شکسته نشود.
  */
 export async function POST(req: Request) {
   // Only artists and admins may upload
@@ -177,19 +188,23 @@ export async function POST(req: Request) {
   try {
     let url: string;
 
-    if (
-      process.env.CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
-    ) {
+    if (foreignCdnAllowed() && process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
       url = await uploadToCloudinary(buffer, ext);
-    } else if (process.env.BLOB_READ_WRITE_TOKEN) {
+    } else if (foreignCdnAllowed() && process.env.BLOB_READ_WRITE_TOKEN) {
       url = await uploadToVercelBlob(buffer, filename);
     } else {
-      url = await uploadLocal(buffer, filename);
+      // مسیر پیش‌فرض: استور ایرانی خودمان (دیسک داخلی یا S3 داخلی)
+      const stored = await putMedia(
+        buildMediaKey("uploads", filename, ext),
+        buffer,
+        detectedMime,
+      );
+      url = stored.url;
     }
 
-    return NextResponse.json({ ok: true, url }, withNoStore());
+    /* `storage` در پاسخ می‌آید تا پنل ادمین بتواند نشان دهد فایل روی کدام پشتیبان
+       ایرانی نشسته است (دیسک داخلی یا باکت S3 داخلی). */
+    return NextResponse.json({ ok: true, url, storage: mediaBackendName() }, withNoStore());
   } catch (e) {
     console.error("[artist/upload] storage error:", e);
     return NextResponse.json({ ok: false, error: "storage_error" }, withNoStore({ status: 502 }));

@@ -7,6 +7,7 @@ import { useLocale } from "@/components/providers/AppProviders";
 import { cn, faNum, href, t } from "@/lib/utils";
 import type { CourseVideoFile } from "@/lib/types";
 import type { Locale } from "@/lib/i18n/types";
+import { SafeVideo } from "@/components/media/SafeVideo";
 
 export interface AcademyVideoEntry {
   video: CourseVideoFile;
@@ -42,7 +43,8 @@ export function VideoGrid({ entries, poster }: { entries: AcademyVideoEntry[]; p
       <div className="lg:col-span-7">
         {current && (
           <div className="overflow-hidden rounded-2xl border border-border bg-[#0c1018]">
-            <video
+            {/* ویدیوهای آپلودشده‌ی ادمین — مسیر خارجی به کش هم‌دامنه هدایت می‌شود */}
+            <SafeVideo
               key={current.video.url}
               src={current.video.url}
               poster={poster}

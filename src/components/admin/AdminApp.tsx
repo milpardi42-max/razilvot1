@@ -64,6 +64,7 @@ import type { AnnouncementBarConfig, AnnouncementBarDirection, AnnouncementBarKi
 import { PortfolioHeroManager } from "@/components/admin/PortfolioHeroManager";
 import { portfolioHero as defaultPortfolioHero } from "@/lib/data/seed";
 import type { Localized } from "@/lib/i18n/types";
+import { SafeImg } from "@/components/media/SafeImg";
 
 type Section =
   | "dashboard"
@@ -701,9 +702,7 @@ function HeroEditor({
               >
                 {/* تصویر پیش‌نمایش */}
                 <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-md border border-border bg-[#0d1117]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
+                  <SafeImg                     src={src}
                     alt={`تصویر ${i + 1}`}
                     className="h-full w-full object-cover"
                     onError={(e) => {
@@ -854,8 +853,7 @@ function HeroEditor({
               >
                 {/* پیش‌نمایش تصویر */}
                 <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.image} alt="" className="h-full w-full object-cover" />
+                  <SafeImg src={p.image} alt="" className="h-full w-full object-cover" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">{t(p.title, "fa")}</p>
@@ -1016,9 +1014,7 @@ function CategoriesEditor({
                 <div className="flex items-center gap-3 border-b border-border bg-background-secondary/50 px-4 py-2.5">
                   {/* تصویر پیش‌نمایش */}
                   <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-md border border-border bg-[#0d1117]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={c.image}
+                    <SafeImg                       src={c.image}
                       alt=""
                       className="h-full w-full object-cover"
                       onError={(e) => {

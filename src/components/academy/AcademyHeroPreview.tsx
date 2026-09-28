@@ -4,6 +4,8 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useLocale } from "@/components/providers/AppProviders";
 import { cn } from "@/lib/utils";
+import { SafeImg } from "@/components/media/SafeImg";
+import { resolveMediaSrc } from "@/lib/media/url";
 
 /**
  * Hero preview player.
@@ -68,14 +70,13 @@ export function AcademyHeroPreview({
   return (
     <div className={cn("group/preview relative flex min-h-[420px] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-elevated", className)}>
       {failed ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover brightness-75" />
+        <SafeImg src={poster} alt="" className="absolute inset-0 h-full w-full object-cover brightness-75" />
       ) : (
         <video
           ref={ref}
           className="absolute inset-0 h-full w-full object-cover brightness-[0.78]"
-          src={src}
-          poster={poster}
+          src={resolveMediaSrc(src, { kind: "video" })}
+          poster={poster ? resolveMediaSrc(poster) : undefined}
           muted
           loop
           playsInline

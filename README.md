@@ -293,6 +293,38 @@ preview frames, sandboxed iframes) no longer logs
 `useCopy` + `<CopyButton>` expose the three real states (idle / copied / blocked) and show the text in
 a readonly field when the browser refuses, so the UI never claims a copy that did not happen.
 
+## Media that loads in Iran (no VPN)
+
+Every image, video and font is served from the site's own domain. Nothing on the display path
+touches `fonts.googleapis.com`, Cloudinary, Vercel Blob or any other non-Iranian CDN — those hosts are
+unreachable without a VPN, which is what used to leave users staring at broken thumbnails and blank
+players.
+
+- **Uploads land in our own store.** `src/lib/media/store.ts` writes to `data/media/` (or to any
+  S3-compatible bucket — ArvanCloud, Liara, ParsPack, MinIO — via `MEDIA_S3_*`, falling back to
+  `MARKETPLACE_S3_*`) and every file is served through **`/api/media/<key>`** with `Range` /
+  `206 Partial Content` support, so video seeking works and `Content-Type` is always correct.
+  `data/` is snapshotted across builds by `scripts/preserve-data.mjs`, so uploads survive deploys
+  (keep `data/` on a persistent volume on VPS/Docker hosts).
+- **Foreign CDNs are opt-in only.** The old Cloudinary → Vercel Blob → disk fallback is gone: with
+  neither `MEDIA_ALLOW_FOREIGN_CDN=1` nor credentials, uploads go straight to local storage, so a
+  blocked `api.cloudinary.com` can never break an upload.
+- **External links are rescued.** Any legacy/external `http(s)` media URL is rewritten to
+  `/api/media/remote?src=…`; the server fetches it once (SSRF-guarded: http/https only, ports 80/443,
+  no private/link-local/metadata addresses, redirects re-validated, 25 MB images / 300 MB videos),
+  caches it under `data/media/remote-cache/` and serves it from our domain forever after.
+- **Nothing can render broken.** `SafeImage` / `SafeImg` / `SafeVideo`
+  (`src/components/media/*`) replace `next/image` and `<video>` on every public surface: a missing
+  file, a blocked host, a 404 or a corrupt poster falls back to the branded placeholders in
+  `public/images/media/` (`scripts/generate-placeholders.mjs` regenerates them). The rescue route
+  redirects to that placeholder even when the upstream is unreachable, so the browser never shows a
+  broken-image icon.
+- **Fonts are local.** Admin print/PDF exports use the self-hosted `Vazirmatn-variable.woff2`
+  (`public/fonts/vazirmatn/`) through `src/lib/print-document.ts`, which also waits for
+  `document.fonts.ready` before printing instead of guessing with `setTimeout`.
+- `tests/media-selfhost.test.mjs` locks all of this down (same-origin rewriting, SSRF guard, range
+  parsing, rescue caching, local fonts, safe wrappers).
+
 ## Live chat
 
 A floating chat icon sits on every public page (bottom corner, above the fold-safe zone): visitors
