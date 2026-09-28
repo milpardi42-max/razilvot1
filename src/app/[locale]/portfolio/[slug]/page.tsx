@@ -127,7 +127,7 @@ export default async function PortfolioDetail({ params }: Props) {
           <Reveal className="lg:col-span-4 lg:col-start-9" delay={100}>
             <div className="lg:sticky lg:top-[calc(var(--header-h)+24px)]">
               <dl className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-xl border border-border bg-background-secondary p-6 text-sm">
-                <Meta k={d.common.client} v={t(p.client, locale)} />
+                {(p.client.fa || p.client.en) && <Meta k={d.common.client} v={t(p.client, locale)} />}
                 <Meta k={d.common.location} v={t(p.location, locale)} />
                 <Meta k={d.common.year} v={String(yr)} />
                 <Meta k={d.common.scope} v={t(p.scope, locale)} />

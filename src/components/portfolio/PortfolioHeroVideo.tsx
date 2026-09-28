@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { Film, Play, RotateCcw } from "lucide-react";
 import type { Locale } from "@/lib/i18n/types";
 
@@ -9,10 +9,13 @@ export function PortfolioHeroVideo({
   src,
   poster,
   locale,
+  offsetLeft = 0,
 }: {
   src: string;
   poster: string;
   locale: Locale;
+  /** Expands the preview toward the left on desktop, without shifting the instructor card. */
+  offsetLeft?: number;
 }) {
   const fa = locale === "fa";
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -38,7 +41,11 @@ export function PortfolioHeroVideo({
   }
 
   return (
-    <div className="overflow-hidden rounded-[20px] border border-white/20 bg-[#171c1a] shadow-2xl">
+    <div
+      data-video-offset={Math.max(0, offsetLeft)}
+      style={{ "--portfolio-video-offset": `${Math.max(0, offsetLeft)}px` } as CSSProperties}
+      className="portfolio-hero-video-frame overflow-hidden rounded-[20px] border border-white/20 bg-[#171c1a] shadow-2xl"
+    >
       <div className="flex items-center justify-between gap-3 border-b border-white/10 px-5 py-3.5 text-[11px] text-white/65">
         <span className="inline-flex items-center gap-2">
           <Film className="h-3.5 w-3.5 text-[#d6bc8e]" aria-hidden />

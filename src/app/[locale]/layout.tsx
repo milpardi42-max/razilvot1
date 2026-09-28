@@ -5,6 +5,7 @@ import { AppProviders } from "@/components/providers/AppProviders";
 import { Fragment } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { LiveChatWidget } from "@/components/layout/LiveChatWidget";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchPalette } from "@/components/layout/SearchPalette";
 import { LocaleChrome } from "@/components/layout/LocaleChrome";
@@ -73,7 +74,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           before={
             <Fragment key="before">
               <a key="skip-link" href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[100] focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background">Skip to content</a>
-              <AnnouncementBarServer key="announcement" />
+              <AnnouncementBarServer key="announcement" locale={locale} />
               <Header key="header" nav={nav} />
               <CartDrawer key="cart-drawer" />
               <SearchPalette key="search-palette" />
@@ -83,6 +84,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         >
           {children}
         </LocaleChrome>
+        <LiveChatWidget />
       </AppProviders>
     </>
   );

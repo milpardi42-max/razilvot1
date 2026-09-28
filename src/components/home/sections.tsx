@@ -399,15 +399,16 @@ export function EducationSection({ items }: { items: EducationCardData[] }) {
 }
 
 /* ------------------------------------------------------------------ */
-export function B2BCustomSection({ image1, image2 }: { image1: string; image2: string }) {
+export function B2BCustomSection({ image1, image2, showB2B = true, showCustom = true }: { image1: string; image2: string; showB2B?: boolean; showCustom?: boolean }) {
   const { locale, dict } = useLocale();
   const items = [
-    { icon: Building2, title: dict.home.b2bTitle, desc: dict.home.b2bDesc, cta: dict.home.b2bCta, path: "/projects", image: image1 },
-    { icon: PenTool, title: dict.home.customTitle, desc: dict.home.customDesc, cta: dict.home.customCta, path: "/custom", image: image2 },
+    ...(showB2B ? [{ icon: Building2, title: dict.home.b2bTitle, desc: dict.home.b2bDesc, cta: dict.home.b2bCta, path: "/projects", image: image1 }] : []),
+    ...(showCustom ? [{ icon: PenTool, title: dict.home.customTitle, desc: dict.home.customDesc, cta: dict.home.customCta, path: "/custom", image: image2 }] : []),
   ];
+  if (items.length === 0) return null;
   return (
     <section className="container-x section-y">
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className={items.length === 1 ? "grid gap-6" : "grid gap-6 lg:grid-cols-2"}>
         {items.map((it, i) => (
           <Reveal key={it.path} delay={i * 80}>
             <Link href={href(locale, it.path)} className="group relative flex min-h-[420px] flex-col justify-end overflow-hidden rounded-xl p-8 text-white md:min-h-[480px]">

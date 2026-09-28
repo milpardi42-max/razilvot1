@@ -32,6 +32,10 @@ const POLICIES: Record<string, { window: number; max: number }> = {
   "academy-enroll": { window: 15 * 60 * 1000, max: 12 },
   /** Artist applications: 6 per hour */
   "marketplace-apply": { window: 60 * 60 * 1000, max: 6 },
+  /** New live-chat sessions: 5 per hour per IP */
+  "chat-create": { window: 60 * 60 * 1000, max: 5 },
+  /** Live-chat messages: 30 per 5 min per conversation */
+  "chat-message": { window: 5 * 60 * 1000, max: 30 },
   /** Default (fallback) */
   default: { window: 15 * 60 * 1000, max: 8 },
 };

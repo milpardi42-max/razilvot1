@@ -3,7 +3,9 @@
 Premium bilingual (فارسی RTL / English LTR) platform for **patterns · creators · portfolios · products · education**.
 
 Built with Next.js 15 (App Router), React 19, Tailwind v4 and a token-driven design system.
-Repository: [`milpardi42-max/rozalit`](https://github.com/milpardi42-max/rozalit) · Production host: **Netlify / Vercel** (SSR).
+Repository: [`milpardi42-max/rozalit`](https://github.com/milpardi42-max/rozalit) · Node.js SSR application.
+
+> **Iran / no-VPN availability:** this code serves bundled and uploaded media from the site's own domain, but it cannot choose your hosting country, DNS route, or ISP reachability. For reliable access inside Iran, deploy the app and persistent media storage on an Iran-reachable provider and test on Iranian mobile/fixed networks. See [MEDIA-DELIVERY-IR.md](MEDIA-DELIVERY-IR.md).
 
 ## Run
 
@@ -36,6 +38,8 @@ StackBlitz validation is still required. Normal production execution is unchange
 
 ### One-click deploy
 
+Netlify and Vercel deployments are convenient for international access, but are **not a guarantee of reachability from Iran**. For the no-VPN requirement, use an Iran-reachable Node host and storage endpoint, and verify them from Iranian networks before launch.
+
 | Platform | Button |
 | --- | --- |
 | **Netlify** | [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/milpardi42-max/rozalit) |
@@ -45,7 +49,8 @@ After import, set environment variables (see `.env.example`):
 
 - `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `AUTH_SECRET`
 - `NEXT_PUBLIC_SITE_URL` = your public URL (no trailing slash)
-- Optional: `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` for persistent admin content
+- `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` for persistent admin content
+- For persistent uploaded photos/videos, configure the `MARKETPLACE_S3_*` variables for an S3-compatible object store reachable from the app server; uploaded media is then streamed through your own `/api/media` domain.
 
 Then open `https://<your-site>/api/health` — expect `"ok": true`.
 
@@ -289,6 +294,10 @@ portfolio/education flags & ordering, banners, SEO. Every save is live immediate
 
   If a save fails on a read-only filesystem the API answers `502 storage_write_failed` with the
   reason in the log — check `GET /api/health`, which reports the active backend.
+- **Images and videos:** new artist/admin media is saved to the S3-compatible object store configured
+  by `MARKETPLACE_S3_*` and served from `/api/media/<id>` on the app's own domain. Without S3, the
+  app uses `data/objects`; that directory must be a writable, persistent disk/volume. On serverless
+  platforms, configure S3 before enabling uploads.
 
 ## Deploy (Netlify — recommended)
 

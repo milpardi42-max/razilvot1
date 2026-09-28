@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Camera, Mail, MapPin, Phone, PlayCircle, Send, Users } from "lucide-react";
 import { useAuth, useLocale, useTheme } from "@/components/providers/AppProviders";
 import { href } from "@/lib/utils";
 import { Logo } from "./Logo";
@@ -35,13 +35,16 @@ export function Footer() {
               <Logo className="text-[19px] text-foreground" />
             </Link>
             <p className="mt-5 max-w-sm text-body-sm text-foreground-secondary">{dict.footer.about}</p>
-            <div className="mt-6 flex items-center gap-2">
+            <p className="mt-6 text-xs font-medium text-foreground-secondary">{locale === "fa" ? "ما را در شبکه‌های اجتماعی دنبال کنید" : "Follow us on social media"}</p>
+            <div className="mt-3 flex items-center gap-2" aria-label={locale === "fa" ? "شبکه‌های اجتماعی" : "Social media links"}>
               {[
-                { icon: Camera, label: "Instagram", href: "https://instagram.com" },
-                { icon: Send, label: "Telegram", href: "https://t.me" },
+                { icon: Camera, label: "Instagram", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com" },
+                { icon: Send, label: "Telegram", href: process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me" },
+                { icon: Users, label: "Facebook", href: process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://facebook.com" },
+                { icon: PlayCircle, label: "YouTube", href: process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://youtube.com" },
                 { icon: Mail, label: "Email", href: "mailto:hello@rosieatelier.com" },
               ].map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label} className="flex h-10 w-10 items-center justify-center rounded-full glass text-foreground transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-soft">
+                <a key={s.label} href={s.href} target={s.href.startsWith("mailto:") ? undefined : "_blank"} rel={s.href.startsWith("mailto:") ? undefined : "noreferrer"} aria-label={s.label} title={s.label} className="flex h-10 w-10 items-center justify-center rounded-full glass text-foreground transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-soft">
                   <s.icon className="h-4 w-4" />
                 </a>
               ))}

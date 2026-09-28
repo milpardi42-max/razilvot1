@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { storeBackendName } from "@/lib/data/store";
 import { adminConfigured } from "@/lib/auth";
+import { storageBackend } from "@/lib/marketplace/storage";
 
 /**
  * Unauthenticated readiness probe for uptime checks.
@@ -43,6 +44,11 @@ export async function GET() {
       service: "rosie-atelier",
       time: new Date().toISOString(),
       storage: { backend, persistent, redis },
+      media: {
+        backend: storageBackend(),
+        sharedObjectStorageConfigured: storageBackend() === "s3",
+        note: storageBackend() === "s3" ? "shared_s3" : "local_disk_requires_persistent_volume",
+      },
       admin: { configured },
     },
     { headers: { "cache-control": "no-store" } },

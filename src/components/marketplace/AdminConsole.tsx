@@ -846,6 +846,14 @@ export function AdminConsole({ locale }: { locale: "fa" | "en" }) {
             />
             {fa ? "ارسال ایمیل فروش به هنرمند" : "E-mail the artist on every sale"}
           </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={settings.autoApproveSeamless}
+              onChange={(event) => setSettings({ ...settings, autoApproveSeamless: event.target.checked })}
+            />
+            {fa ? "انتشار خودکار فایل‌های اسکن‌پاک و بی‌درز" : "Auto-publish clean, seamless uploads"}
+          </label>
           <button type="button" onClick={saveSettings} className="rounded-full bg-foreground px-5 py-3 text-sm text-background">
             {fa ? "ذخیره تنظیمات" : "Save settings"}
           </button>

@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   LogOut,
   Megaphone,
+  MessageCircle,
   Menu,
   Monitor,
   Palette,
@@ -49,6 +50,8 @@ import { PortfoliosManager } from "@/components/admin/PortfoliosManager";
 import { AcademyManager } from "@/components/admin/AcademyManager";
 import { ReservationsManager } from "@/components/admin/ReservationsManager";
 import { FinancialManager } from "@/components/admin/FinancialManager";
+import { ChatsManager } from "@/components/admin/ChatsManager";
+import { MediaUploadControl } from "@/components/admin/MediaUploadControl";
 import { useAuth, useLocale } from "@/components/providers/AppProviders";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
@@ -65,6 +68,7 @@ type Section =
   | "dashboard"
   | "financial"
   | "buyers"
+  | "chats"
   | "reservations"
   | "artists-signup"
   | "home"
@@ -138,6 +142,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "ثبت‌نام‌کننده‌ها",
     items: [
       { id: "buyers", label: "خریداران", icon: <ShoppingBag className="h-4 w-4" /> },
+      { id: "chats", label: "گفتگوهای آنلاین", icon: <MessageCircle className="h-4 w-4" /> },
       { id: "reservations", label: "رزرو رویدادها", icon: <CalendarClock className="h-4 w-4" /> },
       { id: "artists-signup", label: "هنرمندان / طراحان", icon: <Palette className="h-4 w-4" /> },
     ],
@@ -251,6 +256,24 @@ export function AdminApp() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (section === "financial" && data.financialConfig) {
+        const response = await fetch("/api/marketplace/admin", {
+          ...SESSION_FETCH,
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "settings",
+            settings: {
+              vatPct: data.financialConfig.vatPct,
+              artistSharePct: data.financialConfig.defaultArtistSharePct,
+              affiliatePct: data.financialConfig.affiliateCommissionPct,
+              payoutMinimumFa: data.financialConfig.minPayoutFa,
+              payoutMinimumEn: data.financialConfig.minPayoutEn,
+            },
+          }),
+        });
+        if (!response.ok) throw new Error(`marketplace settings → ${response.status}`);
+      }
       setStatus("ok");
       setDirty(false);
       router.refresh();
@@ -262,6 +285,7 @@ export function AdminApp() {
       } else {
         setStatus("error");
       }
+      throw e;
     }
   };
 
@@ -341,7 +365,7 @@ export function AdminApp() {
                   return (
                     <a
                       key={item.id}
-                      href={item.href}
+                      href={item.id === "marketplace" ? `/admin/${locale}/marketplace` : item.href}
                       className={classes}
                       onClick={() => setSidebarOpen(false)}
                     >
@@ -453,7 +477,7 @@ export function AdminApp() {
             </button>
 
             <button
-              onClick={save}
+              onClick={() => { void save().catch(() => undefined); }}
               disabled={!dirty || status === "saving"}
               className={cn(
                 "flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors",
@@ -507,6 +531,7 @@ export function AdminApp() {
                 <FinancialManager data={data} update={update} onSave={save} />
               )}
               {section === "buyers" && <BuyersManager />}
+              {section === "chats" && <ChatsManager />}
               {section === "reservations" && <ReservationsManager />}
               {section === "artists-signup" && <ArtistsSignupManager />}
               {section === "home" && <HomeSectionsManager data={data} update={update} />}
@@ -730,13 +755,17 @@ function HeroEditor({
 
         {/* مسیر ویدیو */}
         <div className="mt-4 border-t border-border pt-4">
-          <Field label="مسیر ویدیو پس‌زمینه (اختیاری — جایگزین تصاویر می‌شود)">
-            <Input
-              dir="ltr"
-              value={hero.video ?? ""}
-              onChange={(e) => set("video", e.target.value || undefined)}
-              placeholder="/videos/hero.mp4"
-            />
+          <Field label="ویدیو پس‌زمینه (اختیاری — جایگزین تصاویر می‌شود)">
+            <div className="space-y-2">
+              <Input
+                dir="ltr"
+                value={hero.video ?? ""}
+                onChange={(e) => set("video", e.target.value || undefined)}
+                placeholder="/api/media/…"
+              />
+              <p className="text-xs text-muted">برای دسترسی پایدار در ایران، فایل را آپلود کنید تا از دامنه خود سایت ارائه شود.</p>
+              <MediaUploadControl mediaType="video" onUploaded={(url) => set("video", url)} />
+            </div>
           </Field>
         </div>
       </Card>

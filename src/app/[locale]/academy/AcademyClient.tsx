@@ -103,6 +103,7 @@ function EnrollModal({
   onClose: () => void;
 }) {
   const { locale, dict } = useLocale();
+  const [previewVideoFailed, setPreviewVideoFailed] = useState(false);
   const isFA = locale === "fa";
   const { value: priceValue, isFree } = priceOf(item, locale);
   const priceLabel = isFree ? null : isFA ? `${faNum(priceValue.toLocaleString("en-US"))} تومان` : `$${priceValue}`;
@@ -133,8 +134,8 @@ function EnrollModal({
       >
         {/* Header: the course's own preview video when the panel has one */}
         <div className="relative h-40 overflow-hidden bg-[#0f141c]">
-          {preview ? (
-            <video src={preview.url} poster={item.image} muted loop autoPlay playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover opacity-80" />
+          {preview && !previewVideoFailed ? (
+            <video src={preview.url} poster={item.image} muted loop autoPlay playsInline preload="metadata" onError={() => setPreviewVideoFailed(true)} className="absolute inset-0 h-full w-full object-cover opacity-80" />
           ) : (
             <Image src={item.image} alt="" fill sizes="600px" className="object-cover opacity-60" />
           )}

@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Bell, CalendarClock, RefreshCw, Users } from "lucide-react";
+import { CalendarClock, RefreshCw, Users } from "lucide-react";
 import { faNum } from "@/lib/utils";
-import type { AcademyReservation } from "@/lib/types";
+import type { AcademyReservation, ReservationStatus } from "@/lib/types";
 
 export function ReservationsManager() {
   const [reservations, setReservations] = useState<AcademyReservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [busyId, setBusyId] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ReservationStatus>("reserved");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,11 +30,33 @@ export function ReservationsManager() {
 
   useEffect(() => { void load(); }, [load]);
 
+  const changeStatus = async (id: string, status: ReservationStatus) => {
+    setBusyId(id);
+    setActionError("");
+    try {
+      const response = await fetch("/api/admin/reservations", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      const result = await response.json() as { reservation?: AcademyReservation; error?: string };
+      if (!response.ok || !result.reservation) throw new Error(result.error ?? "ذخیره وضعیت رزرو ناموفق بود.");
+      setReservations((current) => current.map((reservation) => reservation.id === id ? result.reservation! : reservation));
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "ذخیره وضعیت رزرو ناموفق بود.");
+    } finally {
+      setBusyId("");
+    }
+  };
+
   const active = reservations.filter((reservation) => reservation.status === "reserved");
-  const grouped = active.reduce<Record<string, AcademyReservation[]>>((groups, reservation) => {
+  const visible = reservations.filter((reservation) => reservation.status === statusFilter);
+  const grouped = visible.reduce<Record<string, AcademyReservation[]>>((groups, reservation) => {
     (groups[reservation.eventSlug] ??= []).push(reservation);
     return groups;
   }, {});
+  const statusLabels: Record<ReservationStatus, string> = { reserved: "رزروهای فعال", attended: "حاضرشده", cancelled: "لغوشده" };
 
   return (
     <div className="space-y-6" dir="rtl">
@@ -48,10 +73,18 @@ export function ReservationsManager() {
         </button>
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {(["reserved", "attended", "cancelled"] as ReservationStatus[]).map((status) => {
+          const count = reservations.filter((reservation) => reservation.status === status).length;
+          return <button key={status} type="button" onClick={() => setStatusFilter(status)} className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${statusFilter === status ? "border-[#283044] bg-[#283044] text-white" : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"}`}>{statusLabels[status]} · {faNum(count)}</button>;
+        })}
+      </div>
+
       {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">دریافت رزروها با خطا مواجه شد.</div>}
+      {actionError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</div>}
 
       {!loading && !error && Object.keys(grouped).length === 0 && (
-        <div className="rounded-2xl border border-dashed border-gray-200 py-20 text-center text-sm text-gray-400">هنوز رزروی ثبت نشده است.</div>
+        <div className="rounded-2xl border border-dashed border-gray-200 py-20 text-center text-sm text-gray-400">رکوردی در بخش «{statusLabels[statusFilter]}» وجود ندارد.</div>
       )}
 
       <div className="space-y-4">
@@ -73,9 +106,13 @@ export function ReservationsManager() {
                       <p className="text-sm font-medium text-gray-800">{reservation.name}</p>
                       <p className="text-xs text-gray-500" dir="ltr">{reservation.email}</p>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
                       <span dir="ltr">{new Date(reservation.createdAt).toLocaleString("fa-IR")}</span>
-                      <span className="inline-flex items-center gap-1 text-emerald-600"><Bell className="h-3.5 w-3.5" />یادآوری فعال</span>
+                      {reservation.status === "reserved" && <span className="rounded-full bg-emerald-50 px-2 py-1 font-medium text-emerald-700">رزرو فعال</span>}
+                      {reservation.status === "reserved" && <>
+                        <button type="button" disabled={busyId === reservation.id} onClick={() => void changeStatus(reservation.id, "attended")} className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 font-medium text-emerald-700 disabled:opacity-50">ثبت حضور</button>
+                        <button type="button" disabled={busyId === reservation.id} onClick={() => { if (confirm("رزرو این شرکت‌کننده لغو شود؟")) void changeStatus(reservation.id, "cancelled"); }} className="rounded-md border border-red-200 bg-white px-2.5 py-1.5 font-medium text-red-600 disabled:opacity-50">لغو رزرو</button>
+                      </>}
                     </div>
                   </div>
                 ))}

@@ -23,6 +23,16 @@ test('hero player does not autoplay and has error feedback and native controls',
   assert.match(player, /role="alert"/);
   assert.match(player, /onError=/);
 });
+test('portfolio preview offset changes only the desktop video frame dimensions', () => {
+  const hero = fs.readFileSync('src/components/portfolio/PortfolioHero.tsx', 'utf8');
+  const player = fs.readFileSync('src/components/portfolio/PortfolioHeroVideo.tsx', 'utf8');
+  const css = fs.readFileSync('src/app/globals.css', 'utf8');
+  assert.match(hero, /offsetLeft=\{cfg\.videoOffsetLeft\}/);
+  assert.doesNotMatch(hero, /style=\{videoOffsetStyle\}/);
+  assert.match(player, /className="portfolio-hero-video-frame/);
+  assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?width: calc\(100% \+ var\(--portfolio-video-offset\)\)/);
+  assert.match(css, /margin-left: calc\(0px - var\(--portfolio-video-offset\)\)/);
+});
 test('studio hero does not leak into artist portfolio routes', () => {
   for (const file of ['src/app/[locale]/artists/[slug]/portfolio/page.tsx', 'src/app/[locale]/artists/[slug]/portfolio/[workSlug]/page.tsx']) {
     assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /PortfolioHero|PortfolioIntro/);

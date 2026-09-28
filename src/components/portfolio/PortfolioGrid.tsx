@@ -20,6 +20,8 @@ export function PortfolioGrid({ items, categories }: Props) {
   const [active, setActive] = useState<string>("all");
 
   const sorted = active === "all" ? items : items.filter((c) => c.categoryId === active);
+  const activeCategory = categories.find((category) => category.id === active);
+  const activeDescription = activeCategory ? t(activeCategory.description, locale) : "";
 
   return (
     <>
@@ -40,6 +42,11 @@ export function PortfolioGrid({ items, categories }: Props) {
           </button>
         ))}
       </div>
+      {activeDescription && (
+        <p className="container-x mt-4 max-w-3xl text-sm leading-7 text-foreground-secondary" aria-live="polite">
+          {activeDescription}
+        </p>
+      )}
 
       {/* masonry grid */}
       {sorted.length === 0 ? (
@@ -79,7 +86,7 @@ export function PortfolioGrid({ items, categories }: Props) {
                   <div className="flex items-end justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-label text-white/60">
-                        {t(c.client, locale)} · {locale === "fa" ? faNum(c.year) : c.year}
+                        {c.client.fa || c.client.en ? `${t(c.client, locale)} · ` : ""}{locale === "fa" ? faNum(c.year) : c.year}
                       </p>
                       <h3 className="mt-1.5 font-display text-h3 leading-tight text-balance">
                         {t(c.title, locale)}

@@ -49,6 +49,17 @@ export function href(locale: Locale, path: string) {
   return `${basePath}/${locale}${clean === "/" ? "" : clean}`;
 }
 
+/** Resolve links authored in CMS fields without prefixing locale onto absolute URLs. */
+export function contentHref(locale: Locale, path: string) {
+  const value = path.trim();
+  if (!value || /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(value)) return value || href(locale, "/");
+  return href(locale, value);
+}
+
+export function isExternalContentHref(path: string) {
+  return /^(?:https?:\/\/|mailto:|tel:|\/\/)/i.test(path.trim());
+}
+
 export function slugify(s: string) {
   return s
     .toLowerCase()

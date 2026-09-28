@@ -22,7 +22,12 @@ export default async function ShopPage({ params }: { params: Promise<{ locale: L
   const site = await getSite();
   const d = dictionaries[locale];
   const exclusive = site.collections.find((c) => c.slug === "atelier-exclusive");
-  const banner = site.banners.find((b) => b.enabled && b.placement === "shop");
+  const banners = site.banners.filter((banner) => banner.enabled && banner.placement === "shop").map((banner) => ({
+    id: banner.id,
+    title: t(banner.title, locale),
+    text: t(banner.text, locale),
+    href: banner.href,
+  }));
   const usedCats = site.categories.filter((c) => site.products.some((p) => p.categoryId === c.id));
 
   /* The eight product families every pattern is made for — the «الگو» tree in the sidebar.
@@ -66,7 +71,7 @@ export default async function ShopPage({ params }: { params: Promise<{ locale: L
             makers: locale === "fa" ? "طراح همکار" : "Contributing designers",
             studio: locale === "fa" ? "رزی آتلیه" : "Rosie Atelier",
           }}
-          banner={banner ? { title: t(banner.title, locale), text: t(banner.text, locale) } : null}
+          banners={banners}
         />
       </section>
 

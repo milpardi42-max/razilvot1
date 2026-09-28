@@ -1,4 +1,5 @@
 import { artistPortfolioWorks } from "@/lib/artist/portfolio";
+import { getPortfolioCategories } from "@/lib/portfolio-categories";
 import type { Artist, EducationItem, Pattern, Portfolio, Product, SiteContent } from "../types";
 
 export type Enriched<T> = T & { artist: Artist | null };
@@ -46,7 +47,7 @@ export function enrichPortfolio(site: SiteContent, p: Portfolio) {
   return {
     ...p,
     artist: artistOf(site, p.artistId),
-    category: categoryOf(site, p.categoryId),
+    category: getPortfolioCategories(site).find((category) => category.id === p.categoryId) ?? categoryOf(site, p.categoryId),
     patterns: p.patternIds.map((id) => patternById(site, id)).filter(Boolean) as Pattern[],
     products: p.productIds.map((id) => productById(site, id)).filter(Boolean) as Product[],
   };

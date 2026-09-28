@@ -4,6 +4,8 @@ import path from "path";
 import crypto from "crypto";
 import { seedContent } from "./seed";
 import type { CollectionKey, SiteContent } from "../types";
+import { rewriteLegacyMediaUrls } from "@/lib/media-storage";
+import { RAZIEH_TEXTILE_CATEGORY, RAZIEH_TEXTILE_PORTFOLIO } from "./razieh-textile-portfolio";
 
 /**
  * Content store with pluggable persistence — the UI never touches this directly.
@@ -22,6 +24,7 @@ import type { CollectionKey, SiteContent } from "../types";
 
 const KEY = "rosie-atelier:content";
 const FILE = path.join(process.cwd(), "data", "content.json");
+const RAZIEH_TEXTILE_MIGRATION = "razieh-textile-portfolio-v1";
 
 /** Stable hash of a JSON string, used as the ETag. */
 function makeEtag(json: string): string {
@@ -129,6 +132,47 @@ function normalizeEventHosts(content: SiteContent): SiteContent {
   };
 }
 
+/** One-time additive migration for existing site content; saved marker prevents re-adding deleted work. */
+function migrateRaziehTextilePortfolio(content: SiteContent): SiteContent {
+  const migrations = content.siteMigrations ?? [];
+  if (migrations.includes(RAZIEH_TEXTILE_MIGRATION)) return content;
+
+  const hasPortfolio = content.portfolios.some((item) =>
+    item.id === RAZIEH_TEXTILE_PORTFOLIO.id || item.slug === RAZIEH_TEXTILE_PORTFOLIO.slug,
+  );
+  const portfolioCategories = content.portfolioCategories ?? [];
+  const hasCategory = portfolioCategories.some((item) => item.id === RAZIEH_TEXTILE_CATEGORY.id);
+  const previousBio = "مدرس و میزبان ورکشاپ‌ها و وبینارهای آکادمی رزی.";
+  const previousProfession = "مدرس و میزبان آکادمی";
+
+  const artists = content.artists.map((artist) => {
+    if (artist.id !== "artist-razieh-khairipour") return artist;
+    const seedArtist = seedContent.artists.find((candidate) => candidate.id === artist.id);
+    if (!seedArtist) return artist;
+    const shouldUpdateBio = artist.bio.fa === previousBio || artist.bio.en === "Instructor and host of Rosie Academy workshops and webinars.";
+    const shouldUpdateProfession = artist.profession.fa === previousProfession || artist.profession.en === "Academy instructor and host";
+    if (!shouldUpdateBio && !shouldUpdateProfession) return artist;
+    return {
+      ...artist,
+      ...(shouldUpdateBio ? { bio: seedArtist.bio } : {}),
+      ...(shouldUpdateProfession ? { profession: seedArtist.profession } : {}),
+      tags: [...new Set([...(artist.tags ?? []), "textile", "fabric", "colour", "vest-design"])],
+    };
+  });
+
+  return {
+    ...content,
+    artists,
+    portfolioCategories: hasCategory ? portfolioCategories : [...portfolioCategories, RAZIEH_TEXTILE_CATEGORY],
+    portfolios: hasPortfolio ? content.portfolios : [...content.portfolios, RAZIEH_TEXTILE_PORTFOLIO],
+    siteMigrations: [...migrations, RAZIEH_TEXTILE_MIGRATION],
+  };
+}
+
+function prepareContent(content: SiteContent): SiteContent {
+  return rewriteLegacyMediaUrls(migrateRaziehTextilePortfolio(normalizeEventHosts(content)));
+}
+
 function isEnvelope(v: unknown): v is Envelope {
   return typeof v === "object" && v !== null && "etag" in v && "data" in v;
 }
@@ -139,18 +183,18 @@ function isEnvelope(v: unknown): v is Envelope {
 export async function getContentWithEtag(): Promise<[SiteContent, string]> {
   try {
     const raw = await backend().read();
-    if (!raw) return [normalizeEventHosts(seedContent), ""];
+    if (!raw) return [prepareContent(seedContent), ""];
     // Strip UTF-8 BOM (0xFEFF) if present — some editors/tools prepend it
     const json = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
     const parsed: unknown = JSON.parse(json);
     if (isEnvelope(parsed)) {
-      return [normalizeEventHosts({ ...seedContent, ...parsed.data }), parsed.etag];
+      return [prepareContent({ ...seedContent, ...parsed.data }), parsed.etag];
     }
     // Legacy plain JSON (no envelope) — migrate transparently
     const content = { ...seedContent, ...(parsed as Partial<SiteContent>) };
-    return [normalizeEventHosts(content), makeEtag(raw)];
+    return [prepareContent(content), makeEtag(raw)];
   } catch {
-    return [normalizeEventHosts(seedContent), ""];
+    return [prepareContent(seedContent), ""];
   }
 }
 
@@ -163,7 +207,7 @@ export async function getContent(): Promise<SiteContent> {
  * Persist content.
  * @param next    Updated content to save.
  * @param expectedEtag  When provided, the save will throw "etag_conflict" if the
- *                      stored document has a different etag (optimistic locking).
+ *                      stored etag differs from the expected one (optimistic locking).
  *                      Omit to force-save (admin full-replace).
  */
 export async function saveContent(next: SiteContent, expectedEtag?: string): Promise<void> {

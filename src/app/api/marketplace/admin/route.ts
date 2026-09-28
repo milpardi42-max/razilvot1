@@ -5,6 +5,7 @@ import { getReferralStats } from "@/lib/marketplace/analytics";
 import { listSandboxTransactions } from "@/lib/marketplace/payments/sandbox";
 import { sweepSandboxTransactions } from "@/lib/marketplace/payments/sandbox-sweeper";
 import { fail, json, readJson, requireAdmin } from "@/lib/marketplace/guard";
+import { getContent, saveContent } from "@/lib/data/store";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +91,24 @@ export async function POST(request: Request) {
       ...(patch.autoApproveSeamless !== undefined ? { autoApproveSeamless: patch.autoApproveSeamless } : {}),
       ...(patch.emailOnSale !== undefined ? { emailOnSale: patch.emailOnSale } : {}),
     });
+    const content = await getContent();
+    const financialConfig = content.financialConfig;
+    if (financialConfig) {
+      await saveContent({
+        ...content,
+        financialConfig: {
+          ...financialConfig,
+          ...(patch.artistSharePct !== undefined ? {
+            defaultCommissionPct: 100 - settings.artistSharePct,
+            defaultArtistSharePct: settings.artistSharePct,
+          } : {}),
+          ...(patch.affiliatePct !== undefined ? { affiliateCommissionPct: settings.affiliatePct } : {}),
+          ...(patch.vatPct !== undefined ? { vatPct: settings.vatPct } : {}),
+          ...(patch.payoutMinimumFa !== undefined ? { minPayoutFa: settings.payoutMinimumFa } : {}),
+          ...(patch.payoutMinimumEn !== undefined ? { minPayoutEn: settings.payoutMinimumEn } : {}),
+        },
+      });
+    }
     return json({ ok: true, settings });
   }
 

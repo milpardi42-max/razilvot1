@@ -9,6 +9,7 @@ import { enrichPortfolio, getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import type { Locale } from "@/lib/i18n/types";
 import { t } from "@/lib/utils";
+import { getUsedPortfolioCategories } from "@/lib/portfolio-categories";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,7 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
   const content = await getSite();
   const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const items = site.portfolios.map((p) => enrichPortfolio(site, p));
-  const usedCatIds = new Set(site.portfolios.map((p) => p.categoryId));
-  const categories = site.categories.filter((c) => usedCatIds.has(c.id)).sort((a, b) => a.order - b.order);
+  const categories = getUsedPortfolioCategories(site);
 
   // Studio-specific media; never use an artist portfolio's first item as the hero.
   const instructor = site.artists.find(artist => artist.id === "artist-razieh-khairipour");
@@ -55,12 +55,12 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
           {locale === "fa" ? "آثار و پروژه‌ها" : "Works & projects"}
         </p>
         <h2 className="mt-4 font-display text-h2 text-balance">
-          {locale === "fa" ? "آثار منتخب و پروژه‌های اجراشده" : "Selected works & realised projects"}
+          {locale === "fa" ? "آثار منتخب و روایت‌های طراحی" : "Selected works & design stories"}
         </h2>
         <p className="mt-3 max-w-2xl text-body-lg text-foreground-secondary">
           {locale === "fa"
-            ? "گزیده‌ای از الگوها، کاغذدیواری‌ها، پارچه‌ها و پرده‌هایی که به دیوار و فضای واقعی رسیده‌اند."
-            : "A selection of patterns, wallpapers, textiles and drapery that made it onto real walls and into real spaces."}
+            ? "نگاهی به طراحی الگو، ساخت پارچه، ترکیب رنگ و پروژه‌های پوشیدنی و فضایی."
+            : "A look at pattern design, textile making, colour, and wearable or spatial work."}
         </p>
       </section>
 
@@ -68,7 +68,7 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
       <section className="container-x pt-8 pb-4">
         <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-background-secondary rtl:divide-x-reverse">
           {[
-            [items.length, locale === "fa" ? "پروژه اجراشده" : "Realised projects"],
+            [items.length, locale === "fa" ? "اثر و روایت" : "Works & stories"],
             [categories.length, locale === "fa" ? "دسته‌بندی" : "Categories"],
             [new Set(site.portfolios.map((p) => p.artistId).filter(Boolean)).size, locale === "fa" ? "طراح همکار" : "Contributing designers"],
           ].map(([val, label]) => (

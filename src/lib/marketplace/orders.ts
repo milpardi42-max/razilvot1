@@ -6,10 +6,9 @@ import { addPrice, chargeFor, clampPrice, isZeroPrice, scalePrice, subPrice, ZER
 import {
   SUBSCRIPTION_PERIOD_DAYS,
   SUBSCRIPTION_PLANS,
-  VAT_PCT_IRAN,
   getPlan,
 } from "./config";
-import { getAsset, nextLicenseSerial, recordAssetSale } from "./assets";
+import { getAsset, getSettings, nextLicenseSerial, recordAssetSale } from "./assets";
 import { assetDeliverables } from "./colourways";
 import { appendLedger } from "./assets";
 import type { Localized } from "@/lib/i18n/types";
@@ -408,7 +407,8 @@ export async function quote(request: QuoteRequest): Promise<Quote> {
   }
 
   const netSubtotal = clampPrice(subPrice(subtotal, subscription ? discount : discountOnLines));
-  const tax = request.provider === "stripe" ? ZERO_PRICE : { fa: Math.round((netSubtotal.fa * VAT_PCT_IRAN) / 100), en: 0 };
+  const settings = await getSettings();
+  const tax = request.provider === "stripe" ? ZERO_PRICE : { fa: Math.round((netSubtotal.fa * settings.vatPct) / 100), en: 0 };
   const total = clampPrice({
     fa: netSubtotal.fa + tax.fa,
     en: netSubtotal.en + tax.en,
@@ -612,19 +612,19 @@ export async function fulfillOrder(
 
   const licenses: License[] = [];
   const netByArtist = new Map<string, PricePair>();
+  const marketplaceSettings = await getSettings();
 
   for (const line of order.lines) {
     const asset = await getAsset(line.assetId);
     if (!asset) continue;
     const tier = asset.tiers.find((item) => item.id === line.tierId);
-    /* Artist share: the asset's own override, else the platform default (40 %).
-       Site-owned works (no artist) keep everything with the platform. */
-    const sharePct = asset.artistId ? defaultArtistPct(asset.revenueSharePct) : 0;
+    /* A work-specific share wins; otherwise use the live admin marketplace setting. */
+    const sharePct = asset.artistId ? defaultArtistPct(asset.revenueSharePct ?? marketplaceSettings.artistSharePct) : 0;
     const net = clampPrice(subPrice(line.price, line.discount ?? ZERO_PRICE));
     const split = splitRevenue({
       net,
       artistPct: sharePct,
-      affiliatePct: order.affiliateUserId ? defaultAffiliatePct() : 0,
+      affiliatePct: order.affiliateUserId ? defaultAffiliatePct(marketplaceSettings.affiliatePct) : 0,
       siteOwned: !asset.artistId,
     });
 
@@ -709,7 +709,7 @@ export async function fulfillOrder(
     const split = splitRevenue({
       net: clampPrice(subPrice(license.pricePaid, order.lines.find((line) => line.assetId === license.assetId)?.discount ?? ZERO_PRICE)),
       artistPct: license.royalty.pct,
-      affiliatePct: order.affiliateUserId ? defaultAffiliatePct() : 0,
+      affiliatePct: order.affiliateUserId ? defaultAffiliatePct(marketplaceSettings.affiliatePct) : 0,
       siteOwned: !license.artistId,
     });
     const entries = saleEntries({
@@ -719,14 +719,14 @@ export async function fulfillOrder(
       net: split.gross,
       artistPct: license.royalty.pct,
       affiliateUserId: order.affiliateUserId,
-      affiliatePct: order.affiliateUserId ? defaultAffiliatePct() : 0,
+      affiliatePct: order.affiliateUserId ? defaultAffiliatePct(marketplaceSettings.affiliatePct) : 0,
       note: asset ? { fa: `فروش «${asset.title.fa}»`, en: `Sale of “${asset.title.en}”` } : undefined,
     });
     for (const entry of entries) await appendLedger(entry);
   }
 
   /* ---------- delivery ---------- */
-  const emails = await deliverOrder(order, licenses);
+  const emails = await deliverOrder(order, licenses, marketplaceSettings.emailOnSale);
 
   const updated = await getOrder(order.id);
   if (updated) {
@@ -745,10 +745,10 @@ export async function fulfillOrder(
  * Sends the buyer receipt + artist sale notices. Kept in `email.ts` so the
  * templates live next to the other transactional mail.
  */
-async function deliverOrder(order: MarketplaceOrder, licenses: License[]): Promise<string[]> {
+async function deliverOrder(order: MarketplaceOrder, licenses: License[], notifyArtists: boolean): Promise<string[]> {
   try {
     const { sendOrderDelivery } = await import("./email");
-    return await sendOrderDelivery({ order, licenses });
+    return await sendOrderDelivery({ order, licenses, notifyArtists });
   } catch (error) {
     console.error("[marketplace] delivery email failed:", error);
     return [];

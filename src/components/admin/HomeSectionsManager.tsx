@@ -35,6 +35,7 @@ import {
   Zap,
 } from "lucide-react";
 import { cn, slugify, t } from "@/lib/utils";
+import { MediaUploadControl } from "@/components/admin/MediaUploadControl";
 import type {
   Artist,
   Category,
@@ -634,6 +635,7 @@ function HeroEditor({ data, update }: { data: SiteContent; update: (p: Partial<S
                 <Globe className="h-3.5 w-3.5 text-muted" />
                 <p className="text-[11px] font-semibold text-foreground-secondary">آدرس مستقیم (URL)</p>
               </div>
+              <p className="text-[10px] leading-5 text-muted">لینک‌های خارجی ممکن است در ایران در دسترس نباشند؛ برای نمایش مطمئن، تصویر را آپلود کنید.</p>
               <input
                 ref={newImgRef}
                 dir="ltr"
@@ -670,8 +672,11 @@ function HeroEditor({ data, update }: { data: SiteContent; update: (p: Partial<S
               <span className="h-1 w-4 rounded-full bg-rose-400" />
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">ویدیو پس‌زمینه (اختیاری)</p>
             </div>
-            <p className="mb-2 text-[10px] text-muted">در صورت وارد کردن ویدیو، به‌جای تصاویر نمایش داده می‌شود</p>
-            <FInput dir="ltr" value={h.video ?? ""} onChange={v => set({ video: v || undefined })} placeholder="/videos/hero.mp4" />
+            <p className="mb-2 text-[10px] text-muted">ویدئو را آپلود کنید تا از دامنه خود سایت و بدون وابستگی به میزبان خارجی نمایش داده شود. MP4 (H.264) یا WebM پیشنهاد می‌شود.</p>
+            <div className="space-y-2">
+              <FInput dir="ltr" value={h.video ?? ""} onChange={v => set({ video: v || undefined })} placeholder="/api/media/…" />
+              <MediaUploadControl mediaType="video" onUploaded={(url) => set({ video: url })} />
+            </div>
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { Lock, PlayCircle } from "lucide-react";
+import { Lock, PlayCircle, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useLocale } from "@/components/providers/AppProviders";
 import { cn, faNum, href, t } from "@/lib/utils";
@@ -26,6 +27,8 @@ export function VideoGrid({ entries, poster }: { entries: AcademyVideoEntry[]; p
   const { locale } = useLocale();
   const fa = locale === "fa";
   const [active, setActive] = useState<string | null>(entries[0]?.video.id ?? null);
+  const [failedVideoUrl, setFailedVideoUrl] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const current = entries.find((entry) => entry.video.id === active) ?? entries[0];
 
   if (!entries.length) return null;
@@ -42,15 +45,26 @@ export function VideoGrid({ entries, poster }: { entries: AcademyVideoEntry[]; p
       <div className="lg:col-span-7">
         {current && (
           <div className="overflow-hidden rounded-2xl border border-border bg-[#0c1018]">
-            <video
-              key={current.video.url}
-              src={current.video.url}
-              poster={poster}
-              controls
-              playsInline
-              preload="metadata"
-              className="aspect-video w-full bg-black"
-            />
+            {failedVideoUrl === current.video.url ? (
+              <div className="relative flex aspect-video items-center justify-center bg-black text-center text-white">
+                {poster && <Image src={poster} alt="" fill sizes="(max-width:1024px) 100vw, 60vw" className="object-cover opacity-40" />}
+                <div className="relative z-10 space-y-3 px-4">
+                  <p role="alert" className="text-sm">{fa ? "ویدئو بارگذاری نشد؛ تصویر دوره نمایش داده می‌شود." : "The video could not load; showing the course image."}</p>
+                  <button type="button" onClick={() => { setFailedVideoUrl(null); setRetry((value) => value + 1); }} className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/50 px-3 py-1.5 text-xs hover:bg-white/10"><RefreshCw className="h-3.5 w-3.5" />{fa ? "تلاش دوباره" : "Retry"}</button>
+                </div>
+              </div>
+            ) : (
+              <video
+                key={`${current.video.url}-${retry}`}
+                src={current.video.url}
+                poster={poster}
+                controls
+                playsInline
+                preload="metadata"
+                onError={() => setFailedVideoUrl(current.video.url)}
+                className="aspect-video w-full bg-black"
+              />
+            )}
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 px-4 py-3 text-white">
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">{t(current.video.title, locale)}</p>

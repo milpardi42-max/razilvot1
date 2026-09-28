@@ -309,7 +309,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
               (سهم هنرمند: {faNum(config.defaultArtistSharePct)}٪)
             </span>
           </p>
-          <p className="text-[11px] text-muted">محاسبه خودکار روی تمام فروش‌های فروشگاه</p>
+            <p className="text-[11px] text-muted">سهم پیش‌فرض برای ثبت‌نام و آثار تازه؛ سهم ثبت‌شدهٔ آثار قبلی حفظ می‌شود.</p>
         </div>
 
         {/* Pro Subscription Price */}
@@ -351,7 +351,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
           <p className="font-display text-2xl font-bold text-foreground tabular">
             {faNum(config.minPayoutFa.toLocaleString("fa-IR"))} تومان
           </p>
-          <p className="text-[11px] text-muted">کارمزد سفارش مستقیم پتینه: {faNum(config.directCommissionPct)}٪</p>
+          <p className="text-[11px] text-muted">نرخ سیاستی پروژه مستقیم (پرداخت آنلاین فعال نیست): {faNum(config.directCommissionPct)}٪</p>
         </div>
       </div>
 
@@ -396,7 +396,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
                 تنظیم درصد کمیسیون پیش‌فرض مارکت‌پلیس
               </h2>
               <p className="mt-1 text-xs text-foreground-secondary leading-relaxed">
-                این درصد به عنوان نرخ پیش‌فرض برای تمام فروش‌های پترن و محصولات در سایت محاسبه می‌شود، مگر اینکه برای یک هنرمند سهم اختصاصی تعیین شده باشد.
+                این سهم برای هنرمندان تازه و آثار تازه‌ای که نرخ اختصاصی ندارند استفاده می‌شود. نرخ ذخیره‌شده روی آثار موجود برای جلوگیری از تغییر ناخواسته حفظ می‌شود.
               </p>
             </div>
 
@@ -462,7 +462,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
                 کارمزد خدمات پتینه، پروژه‌های اختصاصی و افیلیت
               </h2>
               <p className="mt-1 text-xs text-foreground-secondary leading-relaxed">
-                تنظیم درصد کارمزد پلتفرم از پروژه‌های اجرایی مستقیم (مانند پتینه‌کاری دیوار) و پورسانت کدهای معرف.
+                پورسانت کدهای معرف روی فروش دیجیتال اعمال می‌شود؛ کارمزد پروژه مستقیم تا زمان راه‌اندازی پرداخت خدمات، فقط به‌عنوان سیاست ذخیره می‌شود.
               </p>
             </div>
 
@@ -481,7 +481,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
                     className="h-10 w-32 rounded-xl border border-border bg-background px-3 text-xs font-bold focus:border-accent focus:outline-none"
                   />
                   <span className="text-xs text-foreground-secondary">
-                    {config.directCommissionPct === 0 ? "صفر درصد (مزیت ویژه برای اعضای Pro)" : `پلتفرم ${faNum(config.directCommissionPct)}٪ کسر می‌کند.`}
+                    {config.directCommissionPct === 0 ? "نرخ ذخیره‌شده؛ پرداخت مستقیم خدمات فعال نیست." : `نرخ سیاستی ${faNum(config.directCommissionPct)}٪؛ فعلاً از سفارش آنلاین کسر نمی‌شود.`}
                   </span>
                 </div>
               </div>
@@ -533,7 +533,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
               <Badge tone="accent">پیشنهاد اصلی</Badge>
             </div>
             <p className="text-xs text-foreground-secondary leading-relaxed">
-              این تعرفه در صفحه ثبت‌نام (`/creators/join`)، داشبورد هنرمند (`/artist`) و صفحه هنرمندان برای فعال‌سازی غرفه اختصاصی و فروش پتینه/خدمات اعمال می‌شود.
+              این تعرفه‌ها ذخیره می‌شوند، اما در حال حاضر خرید اشتراک Pro/Studio و پرداخت آن در سایت فعال نیست؛ تغییر این ارقام هزینه‌ای از کاربر دریافت نمی‌کند.
             </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -1071,7 +1071,7 @@ export function FinancialManager({ data, update, onSave }: FinancialManagerProps
                 سقف ارسال رایگان سفارش‌های فیزیکی
               </h3>
               <p className="mt-1 text-xs text-foreground-secondary">
-                مبلغ سبد خرید برای اعمال خودکار هزینه ارسال صفر در مرحله پرداخت سفارش‌ها.
+                این آستانه فعلاً فقط در تنظیمات ذخیره می‌شود؛ محاسبهٔ هزینهٔ ارسال در checkout هنوز پیاده‌سازی نشده است.
               </p>
             </div>
 
