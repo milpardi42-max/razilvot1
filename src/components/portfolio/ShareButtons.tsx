@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Link2, Check, Share2 } from "lucide-react";
+import { Link2, Check, Share2, TriangleAlert } from "lucide-react";
+import { copyText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -11,26 +12,20 @@ interface Props {
 
 /** Copy-link + native share / social share buttons for portfolio detail. */
 export function ShareButtons({ title, locale }: Props) {
-  const [copied, setCopied] = useState(false);
+  /* "failed" is a real state: an iframe without the clipboard-write permission
+     blocks navigator.clipboard, and `copyText` falls back to execCommand. */
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [manualUrl, setManualUrl] = useState("");
 
   const copy = useCallback(async () => {
     const url = window.location.href;
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      // Fallback: execCommand (legacy browsers)
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      try { document.execCommand("copy"); } catch { /* silent */ }
-      document.body.removeChild(ta);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    const ok = await copyText(url);
+    setCopyState(ok ? "copied" : "failed");
+    setManualUrl(ok ? "" : url);
+    setTimeout(() => {
+      setCopyState("idle");
+      setManualUrl("");
+    }, 6000);
   }, []);
 
   const nativeShare = useCallback(async () => {
@@ -63,8 +58,19 @@ export function ShareButtons({ title, locale }: Props) {
     window.open(`https://wa.me/?text=${text}%20${url}`, "_blank", "noopener,noreferrer");
   };
 
-  const label = locale === "fa" ? "اشتراک‌گذاری" : "Share";
-  const copyLabel = locale === "fa" ? (copied ? "کپی شد" : "کپی لینک") : (copied ? "Copied!" : "Copy link");
+  const fa = locale === "fa";
+  const label = fa ? "اشتراک‌گذاری" : "Share";
+  const copiedLabel = fa ? "کپی شد" : "Copied!";
+  const copyLabel =
+    copyState === "copied"
+      ? copiedLabel
+      : copyState === "failed"
+        ? fa
+          ? "کپی نشد"
+          : "Copy blocked"
+        : fa
+          ? "کپی لینک"
+          : "Copy link";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -84,12 +90,36 @@ export function ShareButtons({ title, locale }: Props) {
         onClick={copy}
         className={cn(
           "hidden md:flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-all duration-200",
-          copied ? "border-success text-success" : "border-border text-foreground-secondary hover:border-foreground hover:text-foreground",
+          copyState === "copied"
+            ? "border-success text-success"
+            : copyState === "failed"
+              ? "border-error text-error"
+              : "border-border text-foreground-secondary hover:border-foreground hover:text-foreground",
         )}
       >
-        {copied ? <Check className="h-3 w-3" /> : <Link2 className="h-3 w-3" />}
+        {copyState === "copied" ? (
+          <Check className="h-3 w-3" />
+        ) : copyState === "failed" ? (
+          <TriangleAlert className="h-3 w-3" />
+        ) : (
+          <Link2 className="h-3 w-3" />
+        )}
         {copyLabel}
       </button>
+
+      {/* The browser blocked the clipboard (embedded/preview frame): let the
+          visitor copy the link by hand instead of pretending it worked. */}
+      {manualUrl && (
+        <input
+          readOnly
+          dir="ltr"
+          value={manualUrl}
+          aria-label={fa ? "لینک این صفحه" : "This page's link"}
+          onFocus={(event) => event.currentTarget.select()}
+          onClick={(event) => event.currentTarget.select()}
+          className="h-8 w-full max-w-sm rounded-full border border-border bg-background-secondary px-3 text-[11px] text-foreground-secondary"
+        />
+      )}
       {/* Social buttons — desktop only */}
       <button type="button" onClick={shareX} aria-label="Share on X / Twitter" className="hidden md:flex h-8 items-center justify-center rounded-full border border-border px-2.5 text-[11px] font-medium text-foreground-secondary transition-colors hover:border-foreground hover:text-foreground">
         𝕏

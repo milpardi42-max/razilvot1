@@ -268,6 +268,31 @@ navigation change (آکادمی · هنرمندان · پورتفولیو · ف�
 (`scripts/academy/make-preview-video.py`), how an admin can replace it by uploading a video for a
 course, and the enrolment smoke check (`scripts/academy/enroll-e2e.sh`).
 
+## Document shell & hydration
+
+Only `src/app/layout.tsx` may render `<html>`, `<head>` or `<body>`. The segment layouts
+(`[locale]/layout.tsx`, `admin/[locale]/layout.tsx`) used to render their own nested shells, and the
+HTML parser silently drops nested document tags — React's tree then held nodes the DOM did not have,
+which surfaced as *"a tree hydrated but some attributes of the server rendered HTML didn't match"*
+(a duplicate theme `<script>`, a body class that flipped, a stray `<head>` inside `<body>`).
+
+- The theme bootstrap lives once, in the root `<head>` (`src/lib/theme-script.ts`), together with an
+  admin bootstrap that adds `html.admin-shell` (grey background, Persian font, RTL) and forces
+  `data-theme="light"` so the panel never inherits a visitor's dark mode.
+- Locale-specific font preloads are plain `<link rel="preload">` children — React 19 hoists them
+  into the real `<head>`, so no wrapper element is needed.
+- `tests/route-shell.test.mjs` locks this in.
+
+## Clipboard
+
+Copy buttons never call `navigator.clipboard` directly. `src/lib/clipboard.ts` tries the async API
+and falls back to a temporary `<textarea>` + `document.execCommand("copy")`; it always resolves to a
+boolean and never throws, so a document whose Permissions-Policy blocks `clipboard-write` (embedded
+preview frames, sandboxed iframes) no longer logs
+`NotAllowedError: Failed to execute 'writeText' on 'Clipboard'` to the console.
+`useCopy` + `<CopyButton>` expose the three real states (idle / copied / blocked) and show the text in
+a readonly field when the browser refuses, so the UI never claims a copy that did not happen.
+
 ## Live chat
 
 A floating chat icon sits on every public page (bottom corner, above the fold-safe zone): visitors

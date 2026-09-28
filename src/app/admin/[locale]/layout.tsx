@@ -8,8 +8,6 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const themeScript = `(function(){try{var t=localStorage.getItem('ra-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();`;
-
 export default async function AdminLocaleLayout({
   children,
   params,
@@ -21,21 +19,20 @@ export default async function AdminLocaleLayout({
   if (!LOCALES.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
 
+  /*
+   * This segment must NOT render <html>, <head> or <body>: the root layout
+   * (`src/app/layout.tsx`) already owns them for the whole app. Rendering a
+   * second nested shell made the browser drop the duplicated tags, which broke
+   * hydration for everything below it (theme script + body class), and the admin
+   * looked like it had two different themes fighting each other.
+   *
+   * The admin shell is still RTL + the grey admin background, and the shared
+   * theme script lives in the root <head>. The always-RTL wrapper below keeps the
+   * admin identical in RTL even when the visitor chose /en.
+   */
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-        <link
-          rel="preload"
-          href="/fonts/iransanse-web/IRANSansWeb.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
-      </head>
-      <body className="min-h-dvh bg-[#f0f2f5]">
-        <AppProviders locale={locale}>{children}</AppProviders>
-      </body>
-    </html>
+    <div lang="fa" dir="rtl" className="admin-shell min-h-dvh">
+      <AppProviders locale={locale}>{children}</AppProviders>
+    </div>
   );
 }

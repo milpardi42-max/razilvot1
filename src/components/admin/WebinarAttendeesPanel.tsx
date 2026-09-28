@@ -10,8 +10,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CheckCircle2,
-  Copy,
   Download,
   Mail,
   Radio,
@@ -20,6 +18,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { cn } from "@/lib/utils";
 
 interface Attendee {
@@ -49,7 +48,6 @@ export function WebinarAttendeesPanel({ slug, modal = false, onClose }: Props) {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [copied, setCopied] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -87,15 +85,8 @@ export function WebinarAttendeesPanel({ slug, modal = false, onClose }: Props) {
 
   const onlineCount = attendees.filter((a) => isOnline(a.lastSeen)).length;
 
-  // Copy all emails to clipboard
-  const copyEmails = async () => {
-    const emails = attendees.map((a) => a.email).join(", ");
-    try {
-      await navigator.clipboard.writeText(emails);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch { /* ignore */ }
-  };
+  /** همه‌ی ایمیل‌ها برای کپی — با fallback اگر مرورگر کلیپ‌بورد را مسدود کند. */
+  const emailList = attendees.map((a) => a.email).join(", ");
 
   // Export CSV
   const exportCSV = () => {
@@ -145,13 +136,14 @@ export function WebinarAttendeesPanel({ slug, modal = false, onClose }: Props) {
           >
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
           </button>
-          <button
-            onClick={copyEmails}
-            title="کپی همه ایمیل‌ها"
-            className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-          >
-            {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-          </button>
+          <CopyButton
+            text={emailList}
+            labels={{ idle: "کپی همه ایمیل‌ها", copied: "ایمیل‌ها کپی شد", failed: "کپی خودکار مسدود شد" }}
+            showLabel={false}
+            showManualField={false}
+            className="rounded-md p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+            iconClassName="h-4 w-4"
+          />
           <button
             onClick={exportCSV}
             title="دانلود CSV"

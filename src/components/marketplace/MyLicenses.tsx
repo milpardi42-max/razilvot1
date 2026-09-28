@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Copy, Download, FileText, Layers, Loader2, ShieldCheck } from "lucide-react";
+import { BadgeCheck, Download, FileText, Layers, Loader2, ShieldCheck } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import { Badge } from "@/components/ui/Badge";
 import { formatPrice, href } from "@/lib/utils";
 import { SESSION_FETCH } from "@/lib/http";
@@ -66,7 +67,6 @@ export function MyLicenses({ locale }: { locale: "fa" | "en" }) {
   const fa = locale === "fa";
   const [licenses, setLicenses] = useState<LicenseRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -106,7 +106,6 @@ export function MyLicenses({ locale }: { locale: "fa" | "en" }) {
 
   return (
     <div className="space-y-4">
-      {notice && <p className="rounded-xl bg-success/10 p-3 text-caption text-success">{notice}</p>}
       {licenses.map((license) => (
         <article key={license.id} className="rounded-2xl border border-border p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -166,17 +165,18 @@ export function MyLicenses({ locale }: { locale: "fa" | "en" }) {
                 <FileText className="h-4 w-4" />
                 {fa ? "گواهی PDF" : "PDF certificate"}
               </a>
-              <button
-                type="button"
-                onClick={() => {
-                  void navigator.clipboard?.writeText(`${window.location.origin}${license.verifyUrl}`);
-                  setNotice(fa ? "لینک راستی‌آزمایی کپی شد." : "Verification link copied.");
+              <CopyButton
+                text={`${window.location.origin}${license.verifyUrl}`}
+                labels={{
+                  idle: fa ? "لینک راستی‌آزمایی" : "Verify link",
+                  copied: fa ? "کپی شد!" : "Copied!",
+                  failed: fa ? "کپی خودکار مسدود شد" : "Copy blocked",
                 }}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm"
-              >
-                <Copy className="h-4 w-4" />
-                {fa ? "لینک راستی‌آزمایی" : "Verify link"}
-              </button>
+                manualHint={fa ? "متن بالا را انتخاب و کپی کنید." : "Select the text above and copy it."}
+                className="rounded-full border border-border px-4 py-2 text-sm hover:border-foreground"
+                iconClassName="h-4 w-4"
+                manualClassName="rounded-full"
+              />
             </div>
           </div>
 

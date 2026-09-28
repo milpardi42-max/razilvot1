@@ -1,4 +1,5 @@
 "use client";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,6 @@ import {
   BadgePercent,
   CheckCircle2,
   Clock,
-  Copy,
   Palette,
   RefreshCw,
   ShieldCheck,
@@ -790,17 +790,16 @@ export function ArtistStudio({ locale }: { locale: "fa" | "en" }) {
                       <span className="font-medium" dir="ltr">
                         {coupon.code}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void navigator.clipboard?.writeText(`${window.location.origin}${coupon.shareUrl}`);
-                          setNotice(fa ? "لینک کپی شد." : "Link copied.");
+                      <CopyButton
+                        text={`${window.location.origin}${coupon.shareUrl}`}
+                        labels={{
+                          idle: fa ? "کپی لینک" : "Copy link",
+                          copied: fa ? "کپی شد!" : "Copied!",
+                          failed: fa ? "کپی خودکار مسدود شد" : "Copy blocked",
                         }}
-                        className="inline-flex items-center gap-1 text-accent"
-                      >
-                        <Copy className="h-3 w-3" />
-                        {fa ? "کپی لینک" : "Copy link"}
-                      </button>
+                        manualHint={fa ? "لینک بالا را دستی انتخاب و کپی کنید." : "Select the link above and copy it."}
+                        className="text-accent hover:text-accent-hover"
+                      />
                     </div>
                     <p className="mt-2 text-foreground-secondary">
                       {fa

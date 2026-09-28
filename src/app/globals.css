@@ -213,6 +213,27 @@
     text-rendering: optimizeLegibility;
     overflow-x: clip;
   }
+  /*
+   * پنل ادمین دیگر <body> مخصوص خودش را ندارد (تگ‌های تودرتو hydration را
+   * می‌شکستند). کلاس `admin-shell` را اسکریپت درون <head> پیش از رنگ‌آمیزی روی
+   * <html> می‌گذارد و اینجا پس‌زمینه‌ی خاکستری، فونت فارسی و راست‌چینِ ادمین
+   * دوباره اعمال می‌شود — ظاهر پنل دقیقاً مثل قبل.
+   */
+  html.admin-shell {
+    background: #f0f2f5;
+  }
+  html.admin-shell body {
+    background: #f0f2f5;
+    color: var(--foreground);
+    font-family: var(--font-fa);
+    line-height: 1.9;
+  }
+  html.admin-shell input,
+  html.admin-shell button,
+  html.admin-shell textarea,
+  html.admin-shell select {
+    font-family: var(--font-fa);
+  }
   /* All Persian text → Lalezar */
   :lang(fa),
   html[lang="fa"] body,
@@ -288,19 +309,23 @@
 }
 
 /* FA overrides: tighter sizes for Lalezar display headings */
-html[lang="fa"] .text-display {
+html[lang="fa"] .text-display,
+html.admin-shell .text-display {
   font-size: clamp(1.9rem, 4.2vw, 3.75rem);
   line-height: 1.18;
 }
-html[lang="fa"] .text-h1 {
+html[lang="fa"] .text-h1,
+html.admin-shell .text-h1 {
   font-size: clamp(2rem, 4vw, 3.75rem);
   line-height: 1.2;
 }
-html[lang="fa"] .text-h2 {
+html[lang="fa"] .text-h2,
+html.admin-shell .text-h2 {
   font-size: clamp(1.625rem, 3vw, 2.75rem);
   line-height: 1.25;
 }
-html[lang="fa"] .text-h3 {
+html[lang="fa"] .text-h3,
+html.admin-shell .text-h3 {
   font-size: clamp(1.25rem, 1.8vw, 1.625rem);
   line-height: 1.3;
 }
@@ -331,7 +356,8 @@ html[lang="fa"] .text-h3 {
   text-transform: uppercase;
   font-weight: 600;
 }
-html[lang="fa"] .text-label {
+html[lang="fa"] .text-label,
+html.admin-shell .text-label {
   letter-spacing: 0 !important;
   font-size: 0.75rem;
 }
@@ -684,7 +710,8 @@ html[lang="fa"] .text-label {
 .group:hover .arrow-shift {
   transform: translateX(var(--dir-x, 4px));
 }
-html[dir="rtl"] {
+html[dir="rtl"],
+html.admin-shell {
   --dir-x: -4px;
 }
 html[dir="ltr"] {
@@ -693,7 +720,8 @@ html[dir="ltr"] {
 @utility rtl-flip {
   transform: scaleX(var(--flip, 1));
 }
-html[dir="rtl"] {
+html[dir="rtl"],
+html.admin-shell {
   --flip: -1;
 }
 

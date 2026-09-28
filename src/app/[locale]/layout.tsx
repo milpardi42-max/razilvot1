@@ -48,8 +48,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 
-const themeScript = `(function(){try{var t=localStorage.getItem('ra-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();`;
-
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
   if (!LOCALES.includes(raw as Locale)) notFound();
@@ -58,18 +56,22 @@ export default async function LocaleLayout({ children, params }: { children: Rea
 
   return (
     <>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} suppressHydrationWarning />
-        {/* preload only the fonts this locale actually renders first */}
-        {locale === "fa" ? (
-          <>
-            <link rel="preload" href="/fonts/iransanse-web/IRANSansWeb.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-            <link rel="preload" href="/fonts/lalezar/Lalezar-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-          </>
-        ) : (
-          <link rel="preload" href="/fonts/instrument-serif/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        )}
-      </head>
+      {/*
+        No <head> element here: only the root layout may render one. A nested <head> is
+        *not* hoisted — the browser drops it while parsing, so React's tree kept a node the
+        DOM did not have and hydration broke. React 19 hoists these preload <link>s into
+        the real <head> by itself, so a wrapper is unnecessary.
+        (The theme bootstrap also lives in the root <head>; rendering it here duplicated it.)
+        Only the fonts this locale renders first are preloaded.
+      */}
+      {locale === "fa" ? (
+        <>
+          <link rel="preload" href="/fonts/iransanse-web/IRANSansWeb.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+          <link rel="preload" href="/fonts/lalezar/Lalezar-arabic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        </>
+      ) : (
+        <link rel="preload" href="/fonts/instrument-serif/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      )}
       <AppProviders locale={locale}>
         <LocaleChrome
           before={

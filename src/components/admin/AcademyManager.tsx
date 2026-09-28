@@ -6,9 +6,7 @@ import {
   BookOpen,
   Calendar,
   Camera,
-  CheckCircle2,
   Clock,
-  Copy,
   Download,
   Edit3,
   ExternalLink,
@@ -34,6 +32,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { CopyButton } from "@/components/ui/CopyButton";
 import Link from "next/link";
 import { cn, href, t } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -627,18 +626,9 @@ function WorkshopEventSection({
    ═══════════════════════════════════════════════════════════════ */
 
 function JoinLinkCopier({ slug }: { slug: string }) {
-  const [copied, setCopied] = useState(false);
   const link = typeof window !== "undefined"
     ? `${window.location.origin}/fa/academy/${slug}/live`
     : `/fa/academy/${slug}/live`;
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch { /* ignore */ }
-  };
 
   return (
     <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs text-emerald-800">
@@ -650,14 +640,12 @@ function JoinLinkCopier({ slug }: { slug: string }) {
         <span dir="ltr" className="flex-1 truncate rounded bg-white border border-emerald-200 px-2 py-1 font-mono text-[11px] text-emerald-900 select-all">
           {link}
         </span>
-        <button
-          type="button"
-          onClick={copy}
-          className="shrink-0 flex items-center gap-1 rounded bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
-        >
-          {copied ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "کپی شد!" : "کپی"}
-        </button>
+        <CopyButton
+          text={link}
+          labels={{ idle: "کپی", copied: "کپی شد!", failed: "کپی خودکار مسدود شد" }}
+          showManualField={false}
+          className="shrink-0 justify-center rounded bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-700"
+        />
       </div>
       <p className="mt-1.5 text-[10px] text-emerald-600">
         این لینک را برای شرکت‌کنندگان ارسال کنید — ورود بدون نیاز به حساب کاربری
