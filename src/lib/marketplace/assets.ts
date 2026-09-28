@@ -515,6 +515,11 @@ export async function completeUpload(
     createdAt: new Date().toISOString(),
   };
 
+  const marketplaceSettings = await getSettings();
+  const autoApproved = marketplaceSettings.autoApproveSeamless
+    && scan.status === "clean"
+    && derivation?.seamless.verdict === "seamless";
+
   const asset: Asset = {
     id: assetId,
     ownerUserId: session.userId,
@@ -556,9 +561,13 @@ export async function completeUpload(
       } satisfies SeamlessReport),
     scan,
     tiers: session.meta.tiers?.length ? session.meta.tiers : defaultTiers(),
-    status: scan.status === "suspicious" ? "pending_review" : "pending_review",
-    visibility: "private",
-    review: {},
+    status: autoApproved ? "approved" : "pending_review",
+    visibility: autoApproved ? "public" : "private",
+    review: autoApproved ? {
+      reviewedBy: "automatic",
+      reviewedAt: new Date().toISOString(),
+      note: "Auto-approved: clean scan and seamless analysis passed.",
+    } : {},
     stats: { views: 0, sales: 0, revenue: { fa: 0, en: 0 } },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -773,7 +782,18 @@ const DEFAULT_SETTINGS: MarketplaceSettings = {
 };
 
 export async function getSettings(): Promise<MarketplaceSettings> {
-  return readDoc<MarketplaceSettings>(KEYS.settings, DEFAULT_SETTINGS);
+  const stored = await readDoc<MarketplaceSettings>(KEYS.settings, DEFAULT_SETTINGS);
+  const { getContent } = await import("@/lib/data/store");
+  const financial = (await getContent()).financialConfig;
+  if (!financial) return stored;
+  return {
+    ...stored,
+    vatPct: financial.vatPct,
+    artistSharePct: financial.defaultArtistSharePct,
+    affiliatePct: financial.affiliateCommissionPct,
+    payoutMinimumFa: financial.minPayoutFa,
+    payoutMinimumEn: financial.minPayoutEn,
+  };
 }
 
 export async function saveSettings(patch: Partial<MarketplaceSettings>): Promise<MarketplaceSettings> {

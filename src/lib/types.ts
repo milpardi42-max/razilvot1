@@ -604,6 +604,10 @@ export interface SiteContent {
   patterns: Pattern[];
   products: Product[];
   portfolios: Portfolio[];
+  /** Portfolio-only categories; legacy works may still reference `categories`. */
+  portfolioCategories?: Category[];
+  /** One-time content migration markers used to avoid re-seeding removed editorial entries. */
+  siteMigrations?: string[];
   education: EducationItem[];
   stories: Story[];
   collections: Collection[];

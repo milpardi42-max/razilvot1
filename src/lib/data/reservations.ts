@@ -2,7 +2,7 @@ import "server-only";
 import { promises as fs } from "fs";
 import path from "path";
 import crypto from "crypto";
-import type { AcademyReservation } from "../types";
+import type { AcademyReservation, ReservationStatus } from "../types";
 import type { Localized } from "../i18n/types";
 
 const KEY = "rosie-atelier:academy-reservations";
@@ -50,6 +50,16 @@ async function write(reservations: AcademyReservation[]) {
 
 export async function getAllReservations(): Promise<AcademyReservation[]> {
   return read();
+}
+
+export async function updateReservationStatus(id: string, status: ReservationStatus): Promise<AcademyReservation | null> {
+  const reservations = await read();
+  const index = reservations.findIndex((reservation) => reservation.id === id);
+  if (index < 0) return null;
+  const updated = { ...reservations[index], status };
+  reservations[index] = updated;
+  await write(reservations);
+  return updated;
 }
 
 export async function getUserReservations(userId: string, email: string) {

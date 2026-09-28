@@ -225,6 +225,7 @@ export async function sendOrderDelivery(input: {
   order: MarketplaceOrder;
   licenses: License[];
   locale?: "fa" | "en";
+  notifyArtists?: boolean;
 }): Promise<string[]> {
   const { order, licenses } = input;
   const locale = input.locale ?? (order.charge.currency === "USD" ? "en" : "fa");
@@ -297,7 +298,8 @@ export async function sendOrderDelivery(input: {
   sent.push(receipt.id);
 
   /* ---------- artist sale notices ---------- */
-  if (process.env.MARKETPLACE_NOTIFY_ARTISTS !== "0") {
+  const notifyArtists = input.notifyArtists ?? (process.env.MARKETPLACE_NOTIFY_ARTISTS !== "0");
+  if (notifyArtists) {
     const byArtist = new Map<string, License[]>();
     for (const license of licenses) {
       if (!license.artistId) continue;

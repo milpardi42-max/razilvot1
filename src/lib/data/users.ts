@@ -265,8 +265,8 @@ async function createPendingArtist(
       en: extra?.specialty || "Designer & Patina Artist",
     },
     bio: { fa: extra?.bio?.trim() ?? "", en: extra?.bio?.trim() ?? "" },
-    avatar: "/images/artists/placeholder.jpg",
-    cover: "/images/artists/cover-placeholder.jpg",
+    avatar: "/images/placeholders/artist-avatar.svg",
+    cover: "/images/placeholders/artist-cover.svg",
     location: { fa: cityVal, en: cityVal },
     social: {
       ...(instagramHandle ? { instagram: instagramHandle } : {}),
@@ -282,7 +282,7 @@ async function createPendingArtist(
     ],
     userId,
     status: "approved" as const, // approved so new artists immediately appear on the artists page!
-    revenueSharePct: 35,
+    revenueSharePct: content.financialConfig?.defaultArtistSharePct ?? 35,
     licenseType: "standard" as const,
     acceptsCommissions: true,
     commissionNotice: {

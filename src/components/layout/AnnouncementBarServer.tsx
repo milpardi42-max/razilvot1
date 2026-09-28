@@ -2,6 +2,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getSite } from "@/lib/data/queries";
 import { AnnouncementBar } from "./AnnouncementBar";
 import type { EducationItem } from "@/lib/types";
+import type { Locale } from "@/lib/i18n/types";
+import { SiteContentBanner } from "./SiteContentBanner";
 
 function pickEvent(education: EducationItem[]): EducationItem | null {
   const live = education.find(
@@ -31,17 +33,19 @@ function pickEvent(education: EducationItem[]): EducationItem | null {
   );
 }
 
-export async function AnnouncementBarServer() {
+export async function AnnouncementBarServer({ locale }: { locale: Locale }) {
   // Opt out of caching so bar changes from admin take effect immediately
   noStore();
 
   const site = await getSite();
   const event = pickEvent(site.education);
 
+  const topBanners = site.banners.filter((banner) => banner.enabled && banner.placement === "top");
+
   return (
-    <AnnouncementBar
-      event={event}
-      configBars={site.announcementBars ?? []}
-    />
+    <>
+      {topBanners.map((banner) => <SiteContentBanner key={banner.id} banner={banner} locale={locale} />)}
+      <AnnouncementBar event={event} configBars={site.announcementBars ?? []} />
+    </>
   );
 }

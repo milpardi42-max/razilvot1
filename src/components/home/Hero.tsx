@@ -22,6 +22,7 @@ export function Hero({ hero, patterns, stats }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [failedVideoUrl, setFailedVideoUrl] = useState<string | null>(null);
 
   /* resolve feature flags — default to enabled if not set */
   const parallaxOn = hero.parallaxEnabled !== false;
@@ -33,6 +34,8 @@ export function Hero({ hero, patterns, stats }: Props) {
 
   /* ── slider mode: force timer even when bgImages exist ── */
   const forceSlider = hero.sliderMode === true;
+
+  const videoFailed = Boolean(hero.video && failedVideoUrl === hero.video);
 
   /* ── scroll-driven mode (bgImages exist AND not sliderMode forced) ── */
   useEffect(() => {
@@ -138,8 +141,8 @@ export function Hero({ hero, patterns, stats }: Props) {
     )}>
       {/* media */}
       <div ref={mediaRef} className="absolute inset-0 will-change-transform scale-[1.06]">
-        {hero.video ? (
-          <video src={hero.video} poster={hero.image} autoPlay muted loop playsInline className="h-full w-full object-cover" />
+        {hero.video && !videoFailed ? (
+          <video src={hero.video} poster={hero.image} autoPlay muted loop playsInline preload="metadata" onError={() => setFailedVideoUrl(hero.video ?? null)} className="h-full w-full object-cover" />
         ) : slideImages ? (
           slideImages.map((src, i) => (
             <Image key={src} src={src} alt="" fill priority={i <= 1} quality={100}

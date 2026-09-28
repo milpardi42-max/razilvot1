@@ -17,6 +17,7 @@ import type {
   Space,
   Story,
 } from "../types";
+import { RAZIEH_TEXTILE_CATEGORY, RAZIEH_TEXTILE_PORTFOLIO } from "./razieh-textile-portfolio";
 
 const L = (fa: string, en: string) => ({ fa, en });
 
@@ -52,13 +53,13 @@ export const artists: Artist[] = [
   {
     id: "artist-razieh-khairipour", slug: "razieh-khairipour",
     name: L("راضیه خیری پور", "Razieh Khairipour"),
-    profession: L("مدرس و میزبان آکادمی", "Academy instructor and host"),
-    bio: L("مدرس و میزبان ورکشاپ‌ها و وبینارهای آکادمی رزی.", "Instructor and host of Rosie Academy workshops and webinars."),
+    profession: L("طراح پارچه، رنگ و پوشاک؛ مدرس آکادمی", "Textile, colour & wearable designer; academy instructor"),
+    bio: L("راضیه خیری‌پور در پیوند میان طراحی و ساخت پارچه، رنگ‌آمیزی و طراحی جلیقه کار می‌کند؛ نگاهی که در آن بافت و رنگ، به زبان پوشاک تبدیل می‌شوند. او همچنین مدرس و میزبان برنامه‌های آکادمی رزی است.", "Razieh Khairipour works across textile design and construction, colour work, and vest design—bringing texture and colour into the language of clothing. She is also an instructor and host at Rosie Academy."),
     avatar: "/images/education/e01.jpg", cover: "/images/education/e01.jpg",
     location: L("تهران", "Tehran"),
     social: {},
     featured: false, followers: 0, rating: 5, reviewsCount: 0,
-    tags: ["academy", "workshop", "webinar"],
+    tags: ["textile", "fabric", "colour", "vest-design", "academy", "workshop", "webinar"],
     status: "approved", revenueSharePct: 35, licenseType: "standard",
   },
   {
@@ -634,6 +635,7 @@ export const portfolios: Portfolio[] = [
     scope: L("کاغذ دیواری", "Wallpaper"),
     categoryId: "cat-minimal", featured: false, isProject: true, size: "square",
   },
+  RAZIEH_TEXTILE_PORTFOLIO,
 ];
 
 /* ------------------------------------------------------------------ */
@@ -857,6 +859,8 @@ export const portfolioHero: PortfolioHeroSettings = {
   descEn: "Where art meets everyday life. Explore a collection of patterns, textures and spaces, meet the designer, and follow ideas as they take shape at Rosie Atelier.",
 };
 
+export const portfolioCategories: Category[] = [RAZIEH_TEXTILE_CATEGORY];
+
 export const seedContent: SiteContent = {
-  categories, spaces, artists, patterns, products, portfolios, education, stories, collections, homeSections, banners, seo, hero, announcementBars, financialConfig, portfolioHero,
+  categories, spaces, artists, patterns, products, portfolios, portfolioCategories, education, stories, collections, homeSections, banners, seo, hero, announcementBars, financialConfig, portfolioHero,
 };

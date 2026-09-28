@@ -22,6 +22,7 @@ import { AcademyClient } from "./AcademyClient";
 import { AcademyHeroPreview } from "@/components/academy/AcademyHeroPreview";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { LiveEventBanner } from "@/components/academy/LiveEventBanner";
+import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ export default async function AcademyPage({
   const site = await getSite();
   const d = dictionaries[locale];
   const isFA = locale === "fa";
+  const academyBanners = site.banners.filter((banner) => banner.enabled && banner.placement === "academy");
 
   const [all, reservations] = await Promise.all([
     Promise.resolve(site.education.map((e) => enrichEducation(site, e))),
@@ -217,6 +219,7 @@ export default async function AcademyPage({
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {academyBanners.map((banner) => <SiteContentBanner key={banner.id} banner={banner} locale={locale} />)}
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-[#0c1018] text-white">

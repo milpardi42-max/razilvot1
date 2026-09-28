@@ -266,7 +266,7 @@ function VideoUploadPanel({
           ref={inputRef}
           type="file"
           multiple
-          accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo,video/mpeg"
+          accept="video/mp4,video/webm"
           className="sr-only"
           onChange={(e) => handleFiles(e.target.files)}
         />
@@ -280,7 +280,7 @@ function VideoUploadPanel({
             <Upload className="h-8 w-8 text-muted" />
             <div>
               <p className="text-sm font-semibold text-foreground">فایل ویدیو را اینجا بکشید یا کلیک کنید</p>
-              <p className="text-xs text-muted mt-1">MP4، WebM، MOV — حداکثر ۵۰۰ مگابایت هر فایل</p>
+              <p className="text-xs text-muted mt-1">MP4 (پیشنهادی، H.264) یا WebM — حداکثر ۵۰۰ مگابایت هر فایل</p>
             </div>
             <Button variant="outline" size="sm" className="pointer-events-none">
               <Upload className="h-3.5 w-3.5 ml-1.5" />

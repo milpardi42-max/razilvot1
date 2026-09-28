@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { familyName } from "@/lib/data/families";
 import type { Locale } from "@/lib/i18n/types";
 import type { EnrichedProduct } from "@/lib/data/queries";
-import { faNum, formatPrice, href, t } from "@/lib/utils";
+import { contentHref, faNum, formatPrice, href, isExternalContentHref, t } from "@/lib/utils";
 
 export interface ShopFamilyChip {
   /** family slug — `?family=<id>` */
@@ -36,7 +36,7 @@ interface Props {
     makers: string;
     studio: string;
   };
-  banner?: { title: string; text: string } | null;
+  banners?: { id: string; title: string; text: string; href: string }[];
 }
 
 /**
@@ -54,7 +54,7 @@ interface Props {
  * Only the hero changes; the shop itself (filters, sorting, sections) is
  * rendered by `ShopFiltered` exactly as before.
  */
-export function ShopHero({ locale, eyebrow, title, description, products, families, brand, labels, banner }: Props) {
+export function ShopHero({ locale, eyebrow, title, description, products, families, brand, labels, banners = [] }: Props) {
   const fa = locale === "fa";
   const num = (n: number) => (fa ? faNum(n) : String(n));
 
@@ -232,12 +232,17 @@ export function ShopHero({ locale, eyebrow, title, description, products, famili
           ))}
         </ul>
 
-        {banner && (
-          <p className="flex items-center gap-2 text-caption text-foreground-secondary lg:shrink-0">
-            <Truck className="h-4 w-4 shrink-0 text-accent" />
-            <strong className="font-medium text-foreground">{banner.title}</strong>
-            <span className="hidden sm:inline">· {banner.text}</span>
-          </p>
+        {banners.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption text-foreground-secondary lg:shrink-0">
+            {banners.map((banner) => {
+              const destination = contentHref(locale, banner.href);
+              const external = isExternalContentHref(destination);
+              const body = <><Truck className="h-4 w-4 shrink-0 text-accent" /><strong className="font-medium text-foreground">{banner.title}</strong>{banner.text && <span className="hidden sm:inline">· {banner.text}</span>}</>;
+              return destination ? (
+                <Link key={banner.id} href={destination} target={external && (destination.startsWith("http") || destination.startsWith("//")) ? "_blank" : undefined} rel={external && (destination.startsWith("http") || destination.startsWith("//")) ? "noopener noreferrer" : undefined} className="inline-flex items-center gap-2 hover:text-foreground">{body}</Link>
+              ) : <p key={banner.id} className="inline-flex items-center gap-2">{body}</p>;
+            })}
+          </div>
         )}
       </div>
     </div>

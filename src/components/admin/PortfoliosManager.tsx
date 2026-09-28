@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import {
   CheckCircle2,
+  ChevronDown,
   Clock,
   Edit3,
   ExternalLink,
@@ -24,6 +25,8 @@ import Link from "next/link";
 import { cn, href, t } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
+import { MediaUploadControl } from "@/components/admin/MediaUploadControl";
+import { getPortfolioCategories } from "@/lib/portfolio-categories";
 import type { Artist, Category, DraftStatus, Portfolio, SiteContent } from "@/lib/types";
 import type { Locale, Localized } from "@/lib/i18n/types";
 
@@ -631,6 +634,153 @@ function PortfolioRowItem({
 }
 
 /* ──────────────────────────────────────────────────────────────
+   Portfolio category management
+   ────────────────────────────────────────────────────────────── */
+function newPortfolioCategory(order: number): Category {
+  const id = `portfolio-category-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 5)}`;
+  return {
+    id,
+    slug: "",
+    name: { fa: "", en: "" },
+    description: { fa: "", en: "" },
+    image: "/images/collections/s04.jpg",
+    featured: false,
+    order,
+  };
+}
+
+function PortfolioCategoryManager({
+  data,
+  categories,
+  update,
+}: {
+  data: SiteContent;
+  categories: Category[];
+  update: (patch: Partial<SiteContent>) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<Category | null>(null);
+  const [error, setError] = useState("");
+
+  const save = () => {
+    if (!draft || !draft.name.fa.trim()) {
+      setError("عنوان فارسی دسته‌بندی را وارد کنید.");
+      return;
+    }
+    const slug = makeSlug(draft.slug || draft.name.en) || draft.id;
+    if (categories.some((category) => category.id !== draft.id && category.slug === slug)) {
+      setError("این اسلاگ قبلاً برای دسته‌بندی دیگری استفاده شده است.");
+      return;
+    }
+    const category: Category = {
+      ...draft,
+      slug,
+      name: { fa: draft.name.fa.trim(), en: draft.name.en.trim() || draft.name.fa.trim() },
+      description: { fa: draft.description.fa.trim(), en: draft.description.en.trim() },
+      image: draft.image.trim() || "/images/collections/s04.jpg",
+    };
+    update({ portfolioCategories: [...categories.filter((item) => item.id !== category.id), category] });
+    setDraft(null);
+    setError("");
+  };
+
+  const remove = (category: Category) => {
+    if (data.portfolios.some((portfolio) => portfolio.categoryId === category.id)) {
+      alert("این دسته‌بندی به نمونه‌کارها متصل است. ابتدا دسته‌بندی آثار را تغییر دهید.");
+      return;
+    }
+    if (!confirm(`دسته‌بندی «${category.name.fa}» حذف شود؟`)) return;
+    update({ portfolioCategories: categories.filter((item) => item.id !== category.id) });
+  };
+
+  return (
+    <section className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-3 px-4 py-4 text-right hover:bg-background-secondary/60 sm:px-5"
+      >
+        <span>
+          <span className="block text-sm font-semibold text-foreground">مدیریت دسته‌بندی‌های پورتفولیو</span>
+          <span className="mt-1 block text-xs text-muted">عنوان، توضیحات دوزبانه و تصویر هر دسته‌بندی را تنظیم کنید · {categories.length} دسته‌بندی</span>
+        </span>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="space-y-4 border-t border-border p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs leading-6 text-muted">این دسته‌بندی‌ها مختص نمونه‌کارها هستند و روی دسته‌بندی محصولات و الگوها تأثیری ندارند.</p>
+            <Button size="sm" variant="outline" onClick={() => { setDraft(newPortfolioCategory(categories.length + 1)); setError(""); }}>
+              <Plus className="h-4 w-4" />
+              دسته‌بندی جدید
+            </Button>
+          </div>
+
+          {draft && (
+            <div className="rounded-xl border border-accent/30 bg-background-secondary/50 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold">{categories.some((item) => item.id === draft.id) ? "ویرایش دسته‌بندی" : "دسته‌بندی تازه"}</h3>
+                <button type="button" onClick={() => { setDraft(null); setError(""); }} className="rounded p-1 text-muted hover:bg-white" aria-label="بستن فرم"><X className="h-4 w-4" /></button>
+              </div>
+              <LocalizedField label="عنوان دسته‌بندی" value={draft.name} onChange={(name) => setDraft({ ...draft, name })} />
+              <LocalizedField label="توضیحات" value={draft.description} onChange={(description) => setDraft({ ...draft, description })} textarea />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="اسلاگ (اختیاری؛ از عنوان انگلیسی ساخته می‌شود)">
+                  <Input dir="ltr" value={draft.slug} placeholder="textile-and-wearable-art" onChange={(event) => setDraft({ ...draft, slug: event.target.value })} />
+                </Field>
+                <Field label="ترتیب نمایش">
+                  <Input type="number" dir="ltr" value={draft.order} onChange={(event) => setDraft({ ...draft, order: Number(event.target.value) || 0 })} />
+                </Field>
+              </div>
+              <Field label="تصویر دسته‌بندی (آدرس فایل یا URL)">
+                <Input dir="ltr" value={draft.image} placeholder="/images/collections/category.jpg" onChange={(event) => setDraft({ ...draft, image: event.target.value })} />
+              </Field>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                <MediaUploadControl mediaType="image" onUploaded={(image) => setDraft({ ...draft, image })} />
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => { setDraft(null); setError(""); }}>انصراف</Button>
+                  <Button size="sm" onClick={save}>ذخیره دسته‌بندی</Button>
+                </div>
+              </div>
+              {error && <p role="alert" className="mt-2 text-xs text-red-600">{error}</p>}
+            </div>
+          )}
+
+          {categories.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-border py-8 text-center text-sm text-muted">هنوز دسته‌بندی‌ای برای پورتفولیو ساخته نشده است.</p>
+          ) : (
+            <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {categories.map((category) => {
+                const worksCount = data.portfolios.filter((portfolio) => portfolio.categoryId === category.id).length;
+                return (
+                  <li key={category.id} className="flex min-w-0 items-center gap-3 rounded-lg border border-border p-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-background-secondary">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={category.image} alt="" className="h-full w-full object-cover" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{category.name.fa}</p>
+                      <p className="truncate text-xs text-muted" dir="ltr">{category.name.en} · {worksCount} اثر</p>
+                      {category.description.fa && <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-foreground-secondary">{category.description.fa}</p>}
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-1">
+                      <button type="button" onClick={() => { setDraft({ ...category, name: { ...category.name }, description: { ...category.description } }); setError(""); }} className="rounded p-1.5 text-muted hover:bg-background-secondary hover:text-foreground" title="ویرایش دسته‌بندی"><Pencil className="h-3.5 w-3.5" /></button>
+                      <button type="button" onClick={() => remove(category)} className="rounded p-1.5 text-muted hover:bg-red-50 hover:text-red-600" title="حذف دسته‌بندی"><Trash2 className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────
    Main Component
    ────────────────────────────────────────────────────────────── */
 export function PortfoliosManager({
@@ -649,7 +799,7 @@ export function PortfoliosManager({
 
   const portfolios = data.portfolios;
   const artists = data.artists;
-  const categories = data.categories;
+  const categories = getPortfolioCategories(data);
 
   /* ── Derived stats ── */
   const stats = {
@@ -761,6 +911,8 @@ export function PortfoliosManager({
           </div>
         ))}
       </div>
+
+      <PortfolioCategoryManager data={data} categories={categories} update={update} />
 
       {/* ── Filters & Search ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

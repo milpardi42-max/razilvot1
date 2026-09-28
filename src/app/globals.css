@@ -1300,3 +1300,17 @@ html[lang="fa"] .pf-hero-title span {
   color: var(--foreground);
   animation: auth-auto-fade-in 0.4s 0.1s var(--ease-out) both;
 }
+
+/* Portfolio-only sizing: expand the preview toward the left on wide desktops.
+   The instructor card and tablet/mobile layout remain at the original column width. */
+.portfolio-hero-video-frame {
+  width: 100%;
+  transition: width 300ms ease, margin-left 300ms ease;
+}
+
+@media (min-width: 1280px) {
+  .portfolio-hero-video-frame[data-video-offset]:not([data-video-offset="0"]) {
+    width: calc(100% + var(--portfolio-video-offset));
+    margin-left: calc(0px - var(--portfolio-video-offset));
+  }
+}

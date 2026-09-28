@@ -62,12 +62,6 @@ export function PortfolioHero({
   const cardGap =
     cfg.instructorCardSize === "sm" ? "gap-3 sm:gap-4 p-3 sm:p-4" : "gap-4 sm:gap-5 p-4 sm:p-5";
 
-  /* ── آفست ویدئو ── */
-  const videoOffsetStyle =
-    cfg.videoOffsetLeft > 0
-      ? { marginLeft: `-${cfg.videoOffsetLeft}px` }
-      : undefined;
-
   return (
     <section
       data-portfolio-hero
@@ -142,14 +136,12 @@ export function PortfolioHero({
           </div>
 
           {/* ── ستون ویدئو + کارت مدرس ── */}
-          <div
-            className="mx-auto w-full max-w-[560px] lg:ms-auto lg:me-0"
-            style={videoOffsetStyle}
-          >
+          <div className="mx-auto w-full max-w-[560px] lg:ms-auto lg:me-0">
             <PortfolioHeroVideo
               src={video.src}
               poster={video.poster}
               locale={locale}
+              offsetLeft={cfg.videoOffsetLeft}
             />
 
             {cfg.instructorCardVisible && (
