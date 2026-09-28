@@ -96,7 +96,9 @@ src/
   components/
     ui/                    # Button, Badge/Sku, Tabs/Chips, Modal, Reveal, SpotlightCard,
                            # BentoGrid, GlassPanel, SectionHeader, PageHero, Carousel, States
-    layout/                # Header, MegaMenu, StoreDropdown, SearchPalette, CartDrawer, Footer
+    layout/                # Header, MegaMenu, StoreDropdown, SearchPalette, CartDrawer, Footer, SocialLinks
+    chat/                  # ChatWidget — the floating live-chat icon + panel
+    icons/                 # BrandIcons — Instagram/Telegram/… brand marks (simple-icons, CC0)
     cards/                 # PatternCard, ProductCard, ArtistCard, PortfolioCard, EducationCard, StyleCard
     product/               # ColorSwatches, Actions, QuickView, Gallery, FilterBar, BuyBoxes
     portfolio/ profile/ home/ admin/ providers/
@@ -266,11 +268,31 @@ navigation change (آکادمی · هنرمندان · پورتفولیو · ف�
 (`scripts/academy/make-preview-video.py`), how an admin can replace it by uploading a video for a
 course, and the enrolment smoke check (`scripts/academy/enroll-e2e.sh`).
 
+## Live chat
+
+A floating chat icon sits on every public page (bottom corner, above the fold-safe zone): visitors
+leave a name (email optional) and message us without an account, and their conversation is kept in
+`localStorage` per browser — `ChatWidget` (`src/components/chat/ChatWidget.tsx`) polls `/api/chat`
+every 6 s while open and every 20 s while closed, so a support reply raises an unread badge on the icon.
+Messages are only marked read when the panel is actually open. Full details, the API surface and the
+storage backends (`data/chat.json` → Upstash Redis for multi-instance) are in
+[REPORT-LIVE-CHAT-SOCIAL.md](./REPORT-LIVE-CHAT-SOCIAL.md).
+
+## Social icons
+
+The footer and the contact page render one row of brand icons (`src/components/layout/SocialLinks.tsx`,
+paths from simple-icons because lucide dropped brand marks in v1). The list lives in
+`SiteContent.socials` and is editable under **تنظیمات → شبکه‌های اجتماعی** in the admin panel
+(add/remove, reorder, per-language labels, hide, live preview). Empty list → the seeded defaults.
+
 ## Admin
 
 Sign in at `/{locale}/login` with the admin account → `/{locale}/admin`.
 Manage: homepage sections (order/visibility), hero, categories/styles, pattern/product/artist/
-portfolio/education flags & ordering, banners, SEO. Every save is live immediately (all pages are dynamic).
+portfolio/education flags & ordering, banners, socials, SEO — and answer live chats in the
+**پشتیبانی → چت آنلاین** tab (`src/components/admin/ChatManager.tsx`): conversation list with an
+unread counter in the sidebar, search/filters, quick replies, close/reopen and delete.
+Every save is live immediately (all pages are dynamic).
 
 - **Auth**: server-side, HMAC-signed HttpOnly cookie (`src/lib/auth.ts`, `/api/auth/*`), with a small
   per-IP+email login throttle (`src/lib/rate-limit.ts`) to blunt brute-force attempts.

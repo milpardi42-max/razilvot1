@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Camera, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { useAuth, useLocale, useTheme } from "@/components/providers/AppProviders";
 import { href } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { NewsletterForm } from "./NewsletterForm";
+import { SocialLinks } from "./SocialLinks";
 import { usePathname } from "next/navigation";
 import { faNum } from "@/lib/utils";
+import type { SocialLink } from "@/lib/types";
 
-export function Footer() {
+export function Footer({ socials }: { socials?: SocialLink[] }) {
   const { locale, dict } = useLocale();
   const pathname = usePathname();
   const { user } = useAuth();
@@ -35,16 +37,12 @@ export function Footer() {
               <Logo className="text-[19px] text-foreground" />
             </Link>
             <p className="mt-5 max-w-sm text-body-sm text-foreground-secondary">{dict.footer.about}</p>
-            <div className="mt-6 flex items-center gap-2">
-              {[
-                { icon: Camera, label: "Instagram", href: "https://instagram.com" },
-                { icon: Send, label: "Telegram", href: "https://t.me" },
-                { icon: Mail, label: "Email", href: "mailto:hello@rosieatelier.com" },
-              ].map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noreferrer" aria-label={s.label} className="flex h-10 w-10 items-center justify-center rounded-full glass text-foreground transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-soft">
-                  <s.icon className="h-4 w-4" />
-                </a>
-              ))}
+            {/* ردیف شبکه‌های اجتماعی — از پنل ادمین قابل تنظیم است */}
+            <div className="mt-6">
+              <p className="mb-3 text-caption uppercase tracking-[0.14em] text-muted">
+                {locale === "fa" ? "ما را دنبال کنید" : "Follow us"}
+              </p>
+              <SocialLinks socials={socials} size="md" />
             </div>
           </div>
 

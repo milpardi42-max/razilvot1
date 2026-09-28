@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { PageHero } from "@/components/ui/PageHero";
 import { InquiryForm } from "@/components/ui/InquiryForm";
+import { SocialLinks } from "@/components/layout/SocialLinks";
 import { getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import type { Locale } from "@/lib/i18n/types";
@@ -41,6 +42,14 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
             const I = Icon as typeof MapPin;
             return <div key={i} className="flex items-center gap-3 rounded-lg border border-border p-4 text-sm"><I className="h-4 w-4 text-accent" /><span dir={i ? "ltr" : undefined}>{v as string}</span></div>;
           })}
+
+          {/* ردیف شبکه‌های اجتماعی — از پنل ادمین قابل تنظیم است */}
+          <div className="rounded-lg border border-border p-4">
+            <p className="mb-3 text-xs font-medium uppercase tracking-[0.14em] text-muted">
+              {fa ? "ما را دنبال کنید" : "Follow us"}
+            </p>
+            <SocialLinks socials={site.socials} size="sm" />
+          </div>
         </div>
         <div className="lg:col-span-8"><InquiryForm kind="contact" /></div>
       </section>

@@ -9,7 +9,9 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { SearchPalette } from "@/components/layout/SearchPalette";
 import { LocaleChrome } from "@/components/layout/LocaleChrome";
 import { AnnouncementBarServer } from "@/components/layout/AnnouncementBarServer";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { getNavData } from "@/lib/data/nav";
+import { getSite } from "@/lib/data/queries";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
 import { dictionaries } from "@/lib/i18n/dictionary";
 
@@ -52,7 +54,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const { locale: raw } = await params;
   if (!LOCALES.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
-  const nav = await getNavData();
+  const [nav, site] = await Promise.all([getNavData(), getSite()]);
 
   return (
     <>
@@ -77,9 +79,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               <Header key="header" nav={nav} />
               <CartDrawer key="cart-drawer" />
               <SearchPalette key="search-palette" />
+              <ChatWidget key="chat-widget" />
             </Fragment>
           }
-          after={<Footer key="footer" />}
+          after={<Footer key="footer" socials={site.socials} />}
         >
           {children}
         </LocaleChrome>

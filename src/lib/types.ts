@@ -597,6 +597,105 @@ export interface PortfolioHeroSettings {
   descEn: string;
 }
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * چت آنلاین (Live chat)
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+/** یک پیام در گفت‌وگوی چت — فرستنده یا بازدیدکننده است یا ادمین (پشتیبان). */
+export interface ChatMessage {
+  id: string;
+  /** visitor = پیام بازدیدکننده، admin = پاسخ پشتیبانی */
+  role: "visitor" | "admin";
+  /** نام نمایشی فرستنده (بازدیدکننده یا نام ادمین) */
+  author: string;
+  body: string;
+  createdAt: string;
+}
+
+export type ChatStatus = "open" | "closed";
+
+/**
+ * یک گفت‌وگوی کامل. سمت بازدیدکننده فقط با زوج `id` + `token` قابل خواندن است؛
+ * توکن هرگز در لیست ادمین نمایش داده نمی‌شود.
+ */
+export interface ChatConversation {
+  id: ID;
+  /** توکن دسترسی بازدیدکننده — کلیدِ گفت‌وگو برای خودِ بازدیدکننده */
+  token: string;
+  /** شناسه‌ی پایدار مرورگر بازدیدکننده (بدون کوکی) */
+  visitorId: string;
+  name: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ChatStatus;
+  /** تعداد پیام‌های خوانده‌نشده برای ادمین / بازدیدکننده */
+  unreadForAdmin: number;
+  unreadForVisitor: number;
+  messages: ChatMessage[];
+  /** آدرس صفحه‌ای که گفت‌وگو از آن شروع شده — برای زمینه‌یابی پشتیبان */
+  page?: string;
+  userAgent?: string;
+  /** شناسه‌ی نشست کاربر لاگین‌شده (در صورت وجود) */
+  userId?: ID;
+}
+
+/** نسخه‌ی سبک گفت‌وگو برای لیست صندوق ورودی ادمین (بدون پیام‌ها و بدون توکن). */
+export interface ChatConversationSummary {
+  id: ID;
+  visitorId: string;
+  name: string;
+  email?: string;
+  createdAt: string;
+  updatedAt: string;
+  status: ChatStatus;
+  /** تعداد پیام‌های خوانده‌نشده برای ادمین / بازدیدکننده */
+  unreadForAdmin: number;
+  unreadForVisitor: number;
+  messageCount: number;
+  lastMessage?: ChatMessage;
+  /** آیا ادمین تا حالا پاسخ داده است */
+  replied: boolean;
+}
+
+/** آمار کلی صندوق چت برای نشان (badge) منوی ادمین. */
+export interface ChatStats {
+  total: number;
+  open: number;
+  unread: number;
+  unreadConversations: number;
+  today: number;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * شبکه‌های اجتماعی (footer / contact)
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+export type SocialPlatform =
+  | "instagram"
+  | "telegram"
+  | "whatsapp"
+  | "pinterest"
+  | "youtube"
+  | "linkedin"
+  | "x"
+  | "facebook"
+  | "threads"
+  | "email"
+  | "phone";
+
+/** یک آیکون در ردیف شبکه‌های اجتماعی — از پنل ادمین قابل تنظیم است. */
+export interface SocialLink {
+  id: ID;
+  platform: SocialPlatform;
+  /** آدرس کامل (https://…) یا mailto: / tel: */
+  href: string;
+  /** برچسب دلخواه؛ اگر خالی باشد از نام پیش‌فرض پلتفرم استفاده می‌شود */
+  label?: Localized;
+  /** آیکون در سایت نمایش داده شود یا نه */
+  enabled?: boolean;
+}
+
 export interface SiteContent {
   categories: Category[];
   spaces: Space[];
@@ -617,6 +716,8 @@ export interface SiteContent {
   financialConfig?: FinancialConfig;
   /** تنظیمات هیرو صفحه پورتفولیو */
   portfolioHero?: PortfolioHeroSettings;
+  /** ردیف آیکون‌های شبکه‌های اجتماعی (فوتر و صفحه تماس) */
+  socials?: SocialLink[];
 }
 
 export type CollectionKey = Exclude<keyof SiteContent, "hero">;

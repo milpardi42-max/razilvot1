@@ -19,6 +19,7 @@ import {
   Image,
   LayoutDashboard,
   LogOut,
+  MessageCircle,
   Megaphone,
   Menu,
   Monitor,
@@ -28,6 +29,7 @@ import {
   Save,
   Search,
   Settings2,
+  Share2,
   ShoppingBag,
   Sparkles,
   ArrowUpLeft,
@@ -49,6 +51,8 @@ import { PortfoliosManager } from "@/components/admin/PortfoliosManager";
 import { AcademyManager } from "@/components/admin/AcademyManager";
 import { ReservationsManager } from "@/components/admin/ReservationsManager";
 import { FinancialManager } from "@/components/admin/FinancialManager";
+import { ChatManager } from "@/components/admin/ChatManager";
+import { SocialsManager } from "@/components/admin/SocialsManager";
 import { useAuth, useLocale } from "@/components/providers/AppProviders";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
@@ -67,6 +71,7 @@ type Section =
   | "buyers"
   | "reservations"
   | "artists-signup"
+  | "chat"
   | "home"
   | "hero"
   | "portfolio-hero"
@@ -79,6 +84,7 @@ type Section =
   | "banners"
   | "seo"
   | "announcement-bars"
+  | "socials"
   | "marketplace";
 
 /* برچسب‌های فارسی بخش‌های صفحه اصلی */
@@ -166,6 +172,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "پشتیبانی",
+    items: [
+      { id: "chat", label: "چت آنلاین", icon: <MessageCircle className="h-4 w-4" /> },
+    ],
+  },
+  {
     label: "جامعه",
     items: [
       { id: "artists", label: "هنرمندان", icon: <Users className="h-4 w-4" /> },
@@ -176,6 +188,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "تنظیمات",
     items: [
+      { id: "socials", label: "شبکه‌های اجتماعی", icon: <Share2 className="h-4 w-4" /> },
       { id: "seo", label: "متادیتای SEO", icon: <Settings2 className="h-4 w-4" /> },
       { id: "announcement-bars", label: "نوار اعلان", icon: <Megaphone className="h-4 w-4" /> },
     ],
@@ -196,6 +209,8 @@ export function AdminApp() {
   const [loadError, setLoadError] = useState<"unauthorized" | "error" | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingArtistCount, setPendingArtistCount] = useState(0);
+  /** پیام‌های خوانده‌نشده‌ی چت — برای نشان کنار «چت آنلاین» در منو */
+  const [chatUnread, setChatUnread] = useState(0);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setLoadError(null);
@@ -220,6 +235,18 @@ export function AdminApp() {
     }
   }, []);
 
+  /** Fetch the unread chat counter for the sidebar badge */
+  const loadChatUnread = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const r = await fetch("/api/admin/chat?stats=1", { credentials: "include", cache: "no-store", signal });
+      if (!r.ok) return;
+      const j = (await r.json()) as { ok: boolean; stats?: { unread?: number } };
+      setChatUnread(j.stats?.unread ?? 0);
+    } catch {
+      // silently ignore
+    }
+  }, []);
+
   useEffect(() => {
     if (!ready || user !== null || loadError === "unauthorized") return;
     const id = window.setTimeout(
@@ -234,8 +261,14 @@ export function AdminApp() {
     const ac = new AbortController();
     void load(ac.signal);
     void loadPendingCount(ac.signal);
-    return () => ac.abort();
-  }, [ready, user, load, loadPendingCount]);
+    void loadChatUnread(ac.signal);
+    // نشان چت هر ۳۰ ثانیه تازه می‌شود تا پشتیبان پیام تازه را از دست ندهد.
+    const timer = window.setInterval(() => void loadChatUnread(), 30_000);
+    return () => {
+      ac.abort();
+      window.clearInterval(timer);
+    };
+  }, [ready, user, load, loadPendingCount, loadChatUnread]);
 
   const update = useCallback((patch: Partial<SiteContent>) => {
     setData((d) => (d ? { ...d, ...patch } : d));
@@ -364,10 +397,23 @@ export function AdminApp() {
                       {item.icon}
                     </span>
                     <span className="truncate">{item.label}</span>
-                    {(item.badge || (item.id === "artists-signup" && pendingArtistCount > 0)) && (
-                      <span className="mr-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                        {item.id === "artists-signup" ? pendingArtistCount : item.badge}
-                      </span>
+                    {(() => {
+                      const badgeCount =
+                        item.id === "artists-signup"
+                          ? pendingArtistCount
+                          : item.id === "chat"
+                            ? chatUnread
+                            : 0;
+                      const show = Boolean(item.badge) || badgeCount > 0;
+                      if (!show) return null;
+                      return (
+                        <span className="mr-auto rounded-full bg-amber-400 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                          {badgeCount > 0 ? badgeCount : item.badge}
+                        </span>
+                      );
+                    })()}
+                    {item.id === "chat" && chatUnread === 0 && (
+                      <span className="mr-auto h-2 w-2 rounded-full bg-emerald-400/70" title="بدون پیام خوانده‌نشده" />
                     )}
                   </button>
                 );
@@ -509,6 +555,7 @@ export function AdminApp() {
               {section === "buyers" && <BuyersManager />}
               {section === "reservations" && <ReservationsManager />}
               {section === "artists-signup" && <ArtistsSignupManager />}
+              {section === "chat" && <ChatManager />}
               {section === "home" && <HomeSectionsManager data={data} update={update} />}
               {section === "hero" && (
                 <HeroEditor
@@ -544,6 +591,9 @@ export function AdminApp() {
                   banners={data.banners}
                   onChange={(banners) => update({ banners })}
                 />
+              )}
+              {section === "socials" && (
+                <SocialsManager socials={data.socials ?? []} onChange={(socials) => update({ socials })} />
               )}
               {section === "seo" && (
                 <SeoEditor seo={data.seo} onChange={(seo) => update({ seo })} />

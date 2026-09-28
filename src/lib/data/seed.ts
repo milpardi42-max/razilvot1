@@ -14,9 +14,11 @@ import type {
   Product,
   SeoMeta,
   SiteContent,
+  SocialLink,
   Space,
   Story,
 } from "../types";
+import { defaultSocials } from "../socials";
 
 const L = (fa: string, en: string) => ({ fa, en });
 
@@ -857,6 +859,9 @@ export const portfolioHero: PortfolioHeroSettings = {
   descEn: "Where art meets everyday life. Explore a collection of patterns, textures and spaces, meet the designer, and follow ideas as they take shape at Rosie Atelier.",
 };
 
+/** ردیف آیکون‌های شبکه‌های اجتماعی — از پنل ادمین («شبکه‌های اجتماعی») قابل تنظیم است. */
+export const socials: SocialLink[] = defaultSocials.map((link) => ({ ...link }));
+
 export const seedContent: SiteContent = {
-  categories, spaces, artists, patterns, products, portfolios, education, stories, collections, homeSections, banners, seo, hero, announcementBars, financialConfig, portfolioHero,
+  categories, spaces, artists, patterns, products, portfolios, education, stories, collections, homeSections, banners, seo, hero, announcementBars, financialConfig, portfolioHero, socials,
 };
